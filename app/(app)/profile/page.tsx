@@ -8,6 +8,6 @@
 
 export default function ProfilePage(){
 	return(
-		<main></main>	
+		<main>Nicho Sebastian I. Villanueva Test</main>	
 	);
 }
