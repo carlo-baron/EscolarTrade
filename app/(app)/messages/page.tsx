@@ -8,6 +8,6 @@
 
 export default function MessagePage(){
 	return(
-		<main></main>	
+		<section></section>	
 	);
 }

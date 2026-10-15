@@ -15,6 +15,6 @@ export default async function ConversationPage({ params } : ConversationProps){
 	const { conversationId } = await params;
 
 	return(
-		<main></main>	
+		<section></section>	
 	);
 }

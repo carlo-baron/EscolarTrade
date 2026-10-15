@@ -30,7 +30,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontMono.variable, "font-sans", inter.variable, spaceGroteskHeading.variable)}
     >
-      <body>
+      <body className="snap-y">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
