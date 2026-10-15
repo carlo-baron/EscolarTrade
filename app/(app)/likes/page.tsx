@@ -9,6 +9,6 @@
 
 export default function LikesPage(){
 	return(
-		<main></main>	
+		<main>I love this</main>	
 	);
 }
