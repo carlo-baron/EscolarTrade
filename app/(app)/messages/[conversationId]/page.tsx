@@ -1,4 +1,12 @@
 import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupText,
+  InputGroupTextarea,
+} from "@/components/ui/input-group"
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -33,8 +41,9 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
-import { SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
+import { SendHorizonal, SendHorizontal, SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
 import { listingStatuses } from "@/types/market.types";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConversationProps {
   params: Promise<{ conversationId: string }>;
@@ -136,6 +145,25 @@ export default async function ConversationPage({
 
           <MessageScrollerButton />
         </MessageScroller>
+
+				<div className="px-4 foot send">
+					<form className="flex gap-2 items-end">
+						<InputGroup>
+							<InputGroupTextarea
+								id="block-end-textarea"
+								className="max-h-20"
+								placeholder="Write a comment..."
+								maxLength={300}
+							/>
+							<InputGroupAddon align="block-end">
+								<InputGroupText>0/300</InputGroupText>
+								<InputGroupButton type="submit" variant="default" size="sm" className="ml-auto">
+									<SendHorizontal />
+								</InputGroupButton>
+							</InputGroupAddon>
+						</InputGroup>
+					</form>
+				</div>
       </MessageScrollerProvider>
     </section>
   );

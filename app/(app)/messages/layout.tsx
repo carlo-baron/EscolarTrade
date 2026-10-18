@@ -8,7 +8,7 @@ export default function MessagesLayout({ children } : { children: React.ReactNod
 		<main id="messages-main" className="snap-start flex pl-8 h-screen">
 			<MessageScroller />
 			<ConversationList />	
-			<Separator className="mx-4" orientation="vertical" />
+			<Separator className="ml-4" orientation="vertical" />
 			{children}
 		</main>
 	);
