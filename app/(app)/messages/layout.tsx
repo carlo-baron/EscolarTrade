@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 
 export default function MessagesLayout({ children } : { children: React.ReactNode }){
 	return(
-		<main id="messages-main" className="scroll-smooth snap-center flex px-8 h-screen">
+		<main id="messages-main" className="snap-start flex pl-8 h-screen">
 			<MessageScroller />
 			<ConversationList />	
 			<Separator className="mx-4" orientation="vertical" />

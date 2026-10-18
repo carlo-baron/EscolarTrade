@@ -230,3 +230,90 @@ export const SAMPLE_CONVERSATIONS: Conversation[] = [
 		unread: false,
 	},
 ]
+
+export const SAMPLE_CHAT = {
+  id: "conv-11",
+  currentUserId: "user-bea",
+  listing: {
+    id: "homemade-brownies",
+		image: "https://i.pravatar.cc/150?img=12",
+    title: "Homemade Chocolate Brownies",
+    price: 80,
+  },
+  participants: [
+    {
+      id: "user-bea",
+      name: "Bea R.",
+      initials: "BR",
+    },
+    {
+      id: "user-andrea",
+      name: "Andrea F.",
+      initials: "AF",
+    },
+  ],
+  messages: [
+    {
+      id: "msg-1",
+      senderId: "user-andrea",
+      content: "Hi! Are the brownies still available?",
+      time: "10:05 AM",
+    },
+    {
+      id: "msg-2",
+      senderId: "user-bea",
+      content: "Hi Andrea! Yes, they're ₱80 for a box of four.",
+      time: "10:06 AM",
+    },
+    {
+      id: "msg-3",
+      senderId: "user-andrea",
+      content: "Nice! Do they have nuts?",
+      time: "10:06 AM",
+    },
+    {
+      id: "msg-4",
+      senderId: "user-bea",
+      content: "Yes, this batch has walnut pieces mixed in.",
+      time: "10:07 AM",
+    },
+    {
+      id: "msg-5",
+      senderId: "user-andrea",
+      content:
+        "Sounds good! I'd like one box. Can we meet at the Canteen after class?",
+      time: "10:07 AM",
+    },
+    {
+      id: "msg-6",
+      senderId: "user-bea",
+      content: "Sure! I'll be there around 12:30 PM. Does that work?",
+      time: "10:08 AM",
+    },
+    {
+      id: "msg-7",
+      senderId: "user-andrea",
+      content: "Yes, perfect. Can I pay cash when we meet?",
+      time: "10:08 AM",
+    },
+    {
+      id: "msg-8",
+      senderId: "user-bea",
+      content:
+        "Yes, cash is fine. I'll be near the entrance carrying a white tote bag.",
+      time: "10:09 AM",
+    },
+    {
+      id: "msg-9",
+      senderId: "user-andrea",
+      content: "Got it! I'll be wearing a blue hoodie. See you later!",
+      time: "10:09 AM",
+    },
+    {
+      id: "msg-10",
+      senderId: "user-bea",
+      content: "See you! Just message me when you arrive 😊",
+      time: "10:10 AM",
+    },
+  ],
+};

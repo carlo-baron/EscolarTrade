@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "cn";
 import {
@@ -90,23 +91,25 @@ export function ConversationItem({
 		onSelectAction: (id: string) => void; 
 	} ){
 	return(
-		<Item 
-			onClick={() => onSelectAction(conversation.id)}
-			className={cn("bg-background", selected === conversation.id && "bg-muted")}>
-			<ItemMedia>
-				<Avatar>
-					<AvatarImage src={conversation.user.avatar} alt="@me" />
-					<AvatarFallback>{conversation.user.initials}</AvatarFallback>
-				</Avatar>
-			</ItemMedia>		
-			<ItemContent>
-				<div className="flex justify-between items-center">
-					<ItemTitle>{conversation.user.name}</ItemTitle>
-					<p className="text-muted-foreground text-xs">{conversation.time}</p>
-				</div>
-				<p className="text-xs">{conversation.listing.title}</p>
-				<ItemDescription className="line-clamp-1">{conversation.lastMessage}</ItemDescription>
-			</ItemContent>
-		</Item>
+		<Link href={`/messages/${conversation.id}`}>
+			<Item 
+				onClick={() => onSelectAction(conversation.id)}
+				className={cn("bg-background", selected === conversation.id && "bg-muted")}>
+				<ItemMedia>
+					<Avatar>
+						<AvatarImage src={conversation.user.avatar} alt="@me" />
+						<AvatarFallback>{conversation.user.initials}</AvatarFallback>
+					</Avatar>
+				</ItemMedia>		
+				<ItemContent>
+					<div className="flex justify-between items-center">
+						<ItemTitle>{conversation.user.name}</ItemTitle>
+						<p className="text-muted-foreground text-xs">{conversation.time}</p>
+					</div>
+					<p className="text-xs">{conversation.listing.title}</p>
+					<ItemDescription className="line-clamp-1">{conversation.lastMessage}</ItemDescription>
+				</ItemContent>
+			</Item>
+		</Link>
 	);
 }
