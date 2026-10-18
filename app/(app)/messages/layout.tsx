@@ -1,10 +1,12 @@
 import React from "react";
 import { ConversationList } from "@/components/Messages/ConversationList";
+import { MessageScroller } from "@/components/Messages/MessageScroller";
 import { Separator } from "@/components/ui/separator";
 
 export default function MessagesLayout({ children } : { children: React.ReactNode }){
 	return(
-		<main className="snap-center flex px-8 h-screen">
+		<main id="messages-main" className="scroll-smooth snap-center flex px-8 h-screen">
+			<MessageScroller />
 			<ConversationList />	
 			<Separator className="mx-4" orientation="vertical" />
 			{children}
