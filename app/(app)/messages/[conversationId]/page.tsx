@@ -1,3 +1,11 @@
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
 import {
   Item,
@@ -25,7 +33,8 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
-import { TriangleAlert } from "lucide-react";
+import { SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
+import { listingStatuses } from "@/types/market.types";
 
 interface ConversationProps {
   params: Promise<{ conversationId: string }>;
@@ -70,6 +79,8 @@ export default async function ConversationPage({
 							<Button size="icon-lg" variant="ghost"><TriangleAlert /></Button>
 						</ItemActions>
 					</Item>
+
+					<ChatItemDetail listing={chat.listing} seller/>
 				</div>
         <MessageScroller className="min-h-0 flex-1">
           <MessageScrollerViewport>
@@ -128,4 +139,62 @@ export default async function ConversationPage({
       </MessageScrollerProvider>
     </section>
   );
+}
+
+interface ChatItemDetailProps {
+	listing: {
+		id: string;
+		image: string;
+		title: string;
+		status: string;
+		price: number;
+	}
+	seller?: boolean;
+}
+
+export function ChatItemDetail({listing, seller = false} : ChatItemDetailProps){
+	const statuses = listingStatuses.map(status => ({
+		label: status,
+		value: status
+	}));
+
+	return(
+		<Item className="bg-muted rounded-none">
+			<ItemMedia variant="icon">
+				<img
+					className="w-10 aspect-square"
+					src={listing.image} alt={listing.title} />
+			</ItemMedia>
+			<ItemContent>
+				<ItemTitle>{listing.title}</ItemTitle>
+				<ItemDescription className="text-foreground font-medium">₱{listing.price}</ItemDescription>
+			</ItemContent>
+			<ItemActions>
+				<Button variant="outline">View Listing <SquareArrowOutUpRight /> </Button>
+				{
+					seller &&
+						(
+							<div className="flex items-center gap-2">
+								<p className="text-muted-foreground">Status:</p>
+
+								<Select items={statuses} defaultValue={listing.status}>
+									<SelectTrigger>
+										<SelectValue placeholder="Status" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											{statuses.map((item) => (
+												<SelectItem key={item.value} value={item.value}>
+													{item.label}
+												</SelectItem>
+											))}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+							</div>
+						)
+				}
+			</ItemActions>
+		</Item>
+	);
 }

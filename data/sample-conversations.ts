@@ -236,6 +236,7 @@ export const SAMPLE_CHAT = {
   currentUserId: "user-bea",
   listing: {
     id: "homemade-brownies",
+		status: "Available",
 		image: "https://i.pravatar.cc/150?img=12",
     title: "Homemade Chocolate Brownies",
     price: 80,
