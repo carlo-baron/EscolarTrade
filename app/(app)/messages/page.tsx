@@ -1,13 +1,36 @@
-// NOTES
-// DESIGN: https://stitch.google.com/projects/8019857299474086472 named Chat
-// STACK: Nextjs, shadcn, tailwind
-// AI: AGENTS.md
-// Only make main body not the header and footer (it's for layout)
-// make design responsive, mobile view provided by the ui design
-// Only edit 1 FILE at a time, never edit other files, not assigned to you
+import Link from "next/link";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { MessageCircleX, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function MessagePage(){
 	return(
-		<section></section>	
+		<section
+			className="flex items-center justify-center w-full"
+		>
+			<Empty>
+				<EmptyHeader>
+					<EmptyMedia variant="icon">
+						<MessageCircleX />
+					</EmptyMedia>
+					<EmptyTitle>No chat selected</EmptyTitle>
+					<EmptyDescription>Browse the marketplace and chat with sellers!</EmptyDescription>
+				</EmptyHeader>
+				<EmptyContent>
+					<Link href="/marketplace">
+						<Button>
+							<Globe />
+							Browse Marketplace</Button>
+					</Link>
+				</EmptyContent>
+			</Empty>
+		</section>	
 	);
 }
