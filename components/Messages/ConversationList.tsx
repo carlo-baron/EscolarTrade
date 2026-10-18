@@ -1,5 +1,6 @@
 "use client";
 
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "cn";
 import {
 	Item,
@@ -21,9 +22,12 @@ import { Search } from "lucide-react";
 import { Conversation } from "@/types/messages.type";
 import { useState } from "react";
 
+type ChatFilter = "all" | "buying" | "selling" | "unread"
+
 export function ConversationList() {
 	const [selectedConversation, setSelectedConversation] =
 	useState<string>("");
+	const [chatFilter, setChatFilter] = useState<ChatFilter>("all");
 
 	return (
 		<aside className="flex h-full min-h-0 w-[30%] shrink-0 flex-col py-4">
@@ -32,7 +36,7 @@ export function ConversationList() {
 					Messages
 				</h1>
 
-				<InputGroup>
+				<InputGroup className="mb-2">
 					<InputGroupInput
 						type="text"
 						placeholder="Search conversations..."
@@ -42,6 +46,21 @@ export function ConversationList() {
 						<Search />
 					</InputGroupAddon>
 				</InputGroup>
+
+				<ToggleGroup
+					variant="outline"
+					defaultValue={["all"]}
+					value={[chatFilter]}
+					onValueChange={(val) => {
+						if(!val) return;
+						setChatFilter(val[0] as ChatFilter);
+					}}
+				>
+					<ToggleGroupItem value="all">All</ToggleGroupItem>
+					<ToggleGroupItem value="buying">Buying</ToggleGroupItem>
+					<ToggleGroupItem value="selling">Selling</ToggleGroupItem>
+					<ToggleGroupItem value="unread">Unread</ToggleGroupItem>
+				</ToggleGroup>
 			</div>
 
 			<ScrollArea className="mt-4 min-h-0 flex-1">
@@ -51,7 +70,7 @@ export function ConversationList() {
 							key={conversation.id}
 							conversation={conversation}
 							selected={selectedConversation}
-							onSelect={setSelectedConversation}
+							onSelectAction={setSelectedConversation}
 						/>
 					))}
 				</ItemGroup>
@@ -63,16 +82,16 @@ export function ConversationList() {
 export function ConversationItem({
 	conversation,
 	selected,
-	onSelect,
+	onSelectAction,
 } : 
 	{
 		conversation: Conversation, 
 		selected: string,
-		onSelect: (id: string) => void; 
+		onSelectAction: (id: string) => void; 
 	} ){
 	return(
 		<Item 
-			onClick={() => onSelect(conversation.id)}
+			onClick={() => onSelectAction(conversation.id)}
 			className={cn("bg-background", selected === conversation.id && "bg-muted")}>
 			<ItemMedia>
 				<Avatar>
