@@ -9,7 +9,10 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:auth": "node --import ./tests/register.mjs --experimental-test-module-mocks tests/auth.test.mjs",
+    "test:auth:emulator": "node --import ./tests/register.mjs tests/auth.emulator.test.mjs",
+    "test:auth:http": "node tests/auth.http.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

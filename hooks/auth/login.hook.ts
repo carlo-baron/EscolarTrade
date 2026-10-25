@@ -1,18 +1,32 @@
-import { auth } from "@/lib/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase"
+import { signInWithEmailAndPassword, signOut } from "firebase/auth"
+import { useRouter } from "next/navigation"
+import { clearSession, createSession } from "@/app/auth/session.server"
+import { authRedirect } from "@/lib/auth/policy"
 
 export function useLogin() {
-	const router = useRouter();
+  const router = useRouter()
 
-	return async (email: string, password: string) => {
-		try{
-			const credential = await signInWithEmailAndPassword(auth, email, password);
-			const user = credential.user;
-
-			if(user) router.push("/marketplace");
-		}catch(error){
-			throw error;
-		}
-	}
+  return async (email: string, password: string) => {
+    await clearSession()
+    const credential = await signInWithEmailAndPassword(
+      auth,
+      email.trim(),
+      password
+    )
+    const result = await createSession(await credential.user.getIdToken(true))
+    if (!result.success) {
+      if (result.error === "unavailable")
+        throw new Error(
+          "Unable to start your session. Please try logging in again."
+        )
+      if (result.error !== "unverified") await signOut(auth)
+      router.replace(authRedirect(result.error))
+      return result
+    }
+    // Keep Firebase client auth for browser Firestore listeners.
+    router.replace("/marketplace")
+    router.refresh()
+    return result
+  }
 }

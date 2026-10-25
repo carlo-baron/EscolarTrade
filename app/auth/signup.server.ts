@@ -77,8 +77,6 @@ export async function signUp(formData: FormData) {
 			};
 		}
 
-		console.error("signUp error:", error);
-
 		return {
 			success: false,
 			errors: { form: ["Something went wrong. Please try again."] },

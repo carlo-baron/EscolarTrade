@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/input-group"
 import { cn } from "@/lib/utils"
 import { categories } from "@/types/market.types"
+import { LogoutButton } from "@/components/Auth/LogoutButton"
 
 type MarketplaceHeaderProps = {
   user: {
@@ -36,18 +37,14 @@ const HEADER_ACTIONS = [
   { icon: Heart, label: "Saved listings" },
 ]
 
-export function MarketplaceHeader({
-  user,
-}: MarketplaceHeaderProps) {
+export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
   const activeCategory = searchParams.get("category")
   const currentSearch = searchParams.get("search") ?? ""
 
-  function createMarketplaceUrl(
-    updates: Record<string, string | null>
-  ) {
+  function createMarketplaceUrl(updates: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString())
 
     Object.entries(updates).forEach(([key, value]) => {
@@ -60,9 +57,7 @@ export function MarketplaceHeader({
 
     const query = params.toString()
 
-    return query
-      ? `/marketplace?${query}`
-      : "/marketplace"
+    return query ? `/marketplace?${query}` : "/marketplace"
   }
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
@@ -104,13 +99,9 @@ export function MarketplaceHeader({
         </form>
 
         <div className="ml-auto flex items-center gap-2">
+          <LogoutButton />
           {HEADER_ACTIONS.map(({ icon: Icon, label }) => (
-            <Button
-              key={label}
-              variant="ghost"
-              size="icon"
-              aria-label={label}
-            >
+            <Button key={label} variant="ghost" size="icon" aria-label={label}>
               <Icon />
             </Button>
           ))}
@@ -155,8 +146,7 @@ export function MarketplaceHeader({
               })}
               className={cn(
                 "shrink-0 border-b-2 border-transparent py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
-                activeCategory === item &&
-                  "border-primary text-foreground"
+                activeCategory === item && "border-primary text-foreground"
               )}
             >
               {item}
@@ -166,10 +156,10 @@ export function MarketplaceHeader({
           <Button
             variant="ghost"
             className="my-2 ml-auto shrink-0"
-						onClick={() => router.push("/listing/create")}
+            onClick={() => router.push("/listing/create")}
           >
-						<Plus />
-						Post a Listing
+            <Plus />
+            Post a Listing
           </Button>
         </nav>
       </div>

@@ -1,7 +1,8 @@
-import { z } from "zod";
-import { PROGRAMS, YEAR_LEVELS } from "@/types/school.types";
+import { z } from "zod"
+import { PROGRAMS, YEAR_LEVELS } from "@/types/school.types"
 
-export const SCHOOL_EMAIL_DOMAIN = "mls.ceu.edu.ph";
+import { isSchoolEmail, SCHOOL_EMAIL_DOMAIN } from "@/lib/auth/policy"
+export { SCHOOL_EMAIL_DOMAIN } from "@/lib/auth/policy"
 
 export const SignUpSchema = z
   .strictObject({
@@ -16,10 +17,7 @@ export const SignUpSchema = z
       .trim()
       .toLowerCase()
       .pipe(z.email("Enter a valid email address."))
-      .refine(
-        (email) => email.endsWith(`@${SCHOOL_EMAIL_DOMAIN}`),
-        `Use your @${SCHOOL_EMAIL_DOMAIN} email address.`
-      ),
+      .refine(isSchoolEmail, `Use your @${SCHOOL_EMAIL_DOMAIN} email address.`),
 
     program: z.enum(
       PROGRAMS.map((program) => program.value),
@@ -45,13 +43,12 @@ export const SignUpSchema = z
       error: "You must agree to the Terms of Service.",
     }),
   })
-  .refine(
-    (data) => data.password === data["confirm-password"],
-    {
-      message: "Passwords do not match.",
-      path: ["confirm-password"],
-    }
-  );
+  .refine((data) => data.password === data["confirm-password"], {
+    message: "Passwords do not match.",
+    path: ["confirm-password"],
+  })
 
-export type SignupInput = z.infer<typeof SignUpSchema>;
-export type SignupErrors = z.core.$ZodFlattenedError<z.output<typeof SignUpSchema>>["fieldErrors"];
+export type SignupInput = z.infer<typeof SignUpSchema>
+export type SignupErrors = z.core.$ZodFlattenedError<
+  z.output<typeof SignUpSchema>
+>["fieldErrors"] & { form?: string[] }

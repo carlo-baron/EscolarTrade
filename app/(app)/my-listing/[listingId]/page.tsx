@@ -1,3 +1,4 @@
+import { requireListingOwner } from "@/lib/auth/session"
 // NOTES
 // DESIGN: https://stitch.google.com/projects/8019857299474086472 named Chat
 // STACK: Nextjs, shadcn, tailwind
@@ -12,6 +13,7 @@ interface EditListingProps{
 
 export default async function EditListingPage({ params } : EditListingProps){
 	const { listingId } = await params;
+	await requireListingOwner(listingId);
 
 	return(
 		<main></main>	

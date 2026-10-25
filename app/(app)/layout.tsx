@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { MarketplaceHeader } from "@/components/Marketplace/MarketPlaceHeader"
 import { Footer } from "@/components/Landing/Footer"
 import { FooterLinkType } from "@/components/Landing/Footer"
+import { requireSession } from "@/lib/auth/session"
 
 const FOOTER_LINKS: FooterLinkType[] = [
   {
@@ -32,19 +33,21 @@ const FOOTER_LINKS: FooterLinkType[] = [
 ]
 
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await requireSession()
+  const name = typeof session.name === "string" ? session.name : session.email ?? "Escolarian"
   return (
 		<>
 			<Suspense fallback={null}>
 				<MarketplaceHeader
 					user={{
-						initials: "BR",
-						name: "Bea R.",
-						subtitle: "BS Nursing 3rd Yr",
+						initials: name.split(" ").map((part) => part[0]).slice(0, 2).join("").toUpperCase(),
+						name,
+						subtitle: "Verified school account",
 					}}
 				/>
 			</Suspense>

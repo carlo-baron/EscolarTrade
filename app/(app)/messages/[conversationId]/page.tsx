@@ -179,7 +179,7 @@ interface ChatItemDetailProps {
 	seller?: boolean;
 }
 
-export function ChatItemDetail({listing, seller = false} : ChatItemDetailProps){
+function ChatItemDetail({listing, seller = false} : ChatItemDetailProps){
 	const statuses = listingStatuses.map(status => ({
 		label: status,
 		value: status
