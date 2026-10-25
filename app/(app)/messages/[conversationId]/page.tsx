@@ -1,71 +1,69 @@
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-  InputGroupText,
-  InputGroupTextarea,
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupText,
+	InputGroupTextarea,
 } from "@/components/ui/input-group"
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
 import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemMedia,
-  ItemTitle,
+	Item,
+	ItemActions,
+	ItemContent,
+	ItemDescription,
+	ItemMedia,
+	ItemTitle,
 } from "@/components/ui/item"
 import { SAMPLE_CHAT } from "@/data/sample-conversations";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import {
-  Message,
-  MessageAvatar,
-  MessageContent,
-  MessageFooter,
-  MessageHeader,
+	Message,
+	MessageAvatar,
+	MessageContent,
+	MessageFooter,
+	MessageHeader,
 } from "@/components/ui/message";
 import {
-  MessageScroller,
-  MessageScrollerButton,
-  MessageScrollerContent,
-  MessageScrollerItem,
-  MessageScrollerProvider,
-  MessageScrollerViewport,
+	MessageScroller,
+	MessageScrollerButton,
+	MessageScrollerContent,
+	MessageScrollerItem,
+	MessageScrollerProvider,
+	MessageScrollerViewport,
 } from "@/components/ui/message-scroller";
-import { SendHorizonal, SendHorizontal, SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
+import { SendHorizontal, SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
 import { listingStatuses } from "@/types/market.types";
-import { Textarea } from "@/components/ui/textarea";
 
 interface ConversationProps {
-  params: Promise<{ conversationId: string }>;
+	params: Promise<{ conversationId: string }>;
 }
 
 export default async function ConversationPage({
-  params,
+	params,
 }: ConversationProps) {
-  const { conversationId } = await params;
-  const chat = SAMPLE_CHAT;
+	const { conversationId } = await params;
+	const chat = SAMPLE_CHAT;
 
 	const otherParticipant = chat.participants.find(participant => participant.id !== chat.currentUserId);
 
-  return (
-    <section className="
+	return (
+		<section className="
 			flex justify-center h-full flex-1 flex-col py-4
 			">
-      <MessageScrollerProvider
-        key={conversationId}
-        defaultScrollPosition="end"
-        autoScroll
-      >
+			<MessageScrollerProvider
+				key={conversationId}
+				defaultScrollPosition="end"
+				autoScroll
+			>
 				<div className="head">
 					<Item>
 						<ItemMedia variant="icon">
@@ -91,60 +89,60 @@ export default async function ConversationPage({
 
 					<ChatItemDetail listing={chat.listing} seller/>
 				</div>
-        <MessageScroller className="min-h-0 flex-1">
-          <MessageScrollerViewport>
-            <MessageScrollerContent className="flex flex-col gap-4 p-4">
-              {chat.messages.map((message) => {
-                const isOwnMessage =
-                  message.senderId === chat.currentUserId;
+				<MessageScroller className="min-h-0 flex-1">
+					<MessageScrollerViewport>
+						<MessageScrollerContent className="flex flex-col gap-4 p-4">
+							{chat.messages.map((message) => {
+								const isOwnMessage =
+									message.senderId === chat.currentUserId;
 
-                const sender = chat.participants.find(
-                  (participant) => participant.id === message.senderId
-                );
+								const sender = chat.participants.find(
+									(participant) => participant.id === message.senderId
+								);
 
-                const alignment = isOwnMessage ? "end" : "start";
+								const alignment = isOwnMessage ? "end" : "start";
 
-                return (
-                  <MessageScrollerItem
-                    key={message.id}
-                    messageId={message.id}
-                  >
-                    <Message align={alignment}>
-                      <MessageAvatar>
-                        <Avatar>
-                          <AvatarFallback>
-                            {sender?.initials ?? "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                      </MessageAvatar>
+								return (
+									<MessageScrollerItem
+										key={message.id}
+										messageId={message.id}
+									>
+										<Message align={alignment}>
+											<MessageAvatar>
+												<Avatar>
+													<AvatarFallback>
+														{sender?.initials ?? "?"}
+													</AvatarFallback>
+												</Avatar>
+											</MessageAvatar>
 
-                      <MessageContent className="min-w-0">
-                        <MessageHeader>
-                          {isOwnMessage ? "You" : sender?.name ?? "Unknown"}
-                        </MessageHeader>
+											<MessageContent className="min-w-0">
+												<MessageHeader>
+													{isOwnMessage ? "You" : sender?.name ?? "Unknown"}
+												</MessageHeader>
 
-                        <Bubble
-                          align={alignment}
-                          variant={isOwnMessage ? "default" : "secondary"}
-                        >
-                          <BubbleContent className="whitespace-pre-wrap wrap-break-words">
-                            {message.content}
-                          </BubbleContent>
-                        </Bubble>
+												<Bubble
+													align={alignment}
+													variant={isOwnMessage ? "default" : "secondary"}
+												>
+													<BubbleContent className="whitespace-pre-wrap wrap-break-words">
+														{message.content}
+													</BubbleContent>
+												</Bubble>
 
-                        <MessageFooter className="text-xs text-muted-foreground">
-                          {message.time}
-                        </MessageFooter>
-                      </MessageContent>
-                    </Message>
-                  </MessageScrollerItem>
-                );
-              })}
-            </MessageScrollerContent>
-          </MessageScrollerViewport>
+												<MessageFooter className="text-xs text-muted-foreground">
+													{message.time}
+												</MessageFooter>
+											</MessageContent>
+										</Message>
+									</MessageScrollerItem>
+								);
+							})}
+						</MessageScrollerContent>
+					</MessageScrollerViewport>
 
-          <MessageScrollerButton />
-        </MessageScroller>
+					<MessageScrollerButton />
+				</MessageScroller>
 
 				<div className="px-4 foot send">
 					<form className="flex gap-2 items-end">
@@ -164,15 +162,16 @@ export default async function ConversationPage({
 						</InputGroup>
 					</form>
 				</div>
-      </MessageScrollerProvider>
-    </section>
-  );
+			</MessageScrollerProvider>
+		</section>
+	);
 }
 
 interface ChatItemDetailProps {
 	listing: {
 		id: string;
 		image: string;
+		slug: string;
 		title: string;
 		status: string;
 		price: number;

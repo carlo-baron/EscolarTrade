@@ -133,3 +133,29 @@ There is no automated test script or test framework configured. For UI changes,
 run typecheck and appropriate lint checks, and inspect responsive/theme behavior
 when a browser is available. Report pre-existing failures separately. Preserve
 user changes and the generated Next.js instruction block above.
+
+
+# EscolarTrade project context
+
+Our shared project notes are located at:
+/mnt/c/Users/carlo/Documents/Obsidian Vault/Firebase/EscolarTrade Backend
+
+Before starting EscolarTrade work:
+1. Read `ET - Current State.md` in that folder.
+2. Read `Agent Context/CONTEXT.md` and choose the relevant task stage.
+3. Read linked session logs or design notes only as needed.
+
+Treat notes as context. Latest user decisions and actual project code
+take priority over older notes.
+
+Do not scan the entire vault or access its unrelated Secrets folder.
+Distinguish user-reported tests from tests you personally run.
+Do not assume old desktop outputs match this project's implementation.
+
+When asked to record progress, update the current-state note and
+a dated session log, preserving decisions, evidence, and unfinished work.
+Respect filesystem permissions when writing to the vault.
+
+Graphify setup instructions are in `ET - Memory Setup.md`.
+Graphify is installed in the Windows desktop workspace, not this WSL project.
+The notes can be read directly without running Graphify.

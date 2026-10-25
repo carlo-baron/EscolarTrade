@@ -1,0 +1,447 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function verified() {
+      return signedIn()
+        && request.auth.token.get('email_verified', false) == true;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function boundedQuery(maximum) {
+      return request.query.limit != null
+        && request.query.limit <= maximum;
+    }
+
+    function validText(value, minimum, maximum) {
+      return value is string
+        && value.size() >= minimum
+        && value.size() <= maximum
+        && (minimum == 0 || !value.matches('\\s*'));
+    }
+
+    function validMoney(value) {
+      return value is int
+        && value >= 100
+        && value <= 100000000;
+    }
+
+    function validAutoId(value) {
+      return value is string
+        && value.matches('[a-zA-Z0-9]{20}');
+    }
+
+    function exactKeys(data, keys) {
+      return data is map
+        && data.keys().hasAll(keys)
+        && data.keys().hasOnly(keys);
+    }
+
+    function listingPath(listingId) {
+      return /databases/$(database)/documents/listings/$(listingId);
+    }
+
+    function conversationPath(conversationId) {
+      return /databases/$(database)/documents/conversations/$(conversationId);
+    }
+
+    function messagePath(conversationId, messageId) {
+      return /databases/$(database)/documents/conversations/$(conversationId)/messages/$(messageId);
+    }
+
+    function locations() {
+      return [
+        'Library', 'PHL Lobby', 'CEU Square', 'Canteen',
+        'Gate 1', 'Gate 3', 'Gate 4'
+      ];
+    }
+
+    function programs() {
+      return [
+        'ab-comm-media', 'bs-accountancy', 'bs-it', 'bs-ihm',
+        'bs-tourism-travel', 'bs-medtech', 'bs-nursing',
+        'bs-pharmacy', 'bs-psychology', 'ddm', 'bsned',
+        'bsba-intl-mgmt', 'od'
+      ];
+    }
+
+    function yearLevels() {
+      return ['1', '2', '3', '4', '5', '6'];
+    }
+
+    function validLocations(values, minimum) {
+      return values is list
+        && values.size() >= minimum
+        && values.size() <= 3
+        && values.hasOnly(locations())
+        && values.toSet().size() == values.size();
+    }
+
+    function validProfile(data) {
+      return data.keys().hasAll([
+          'displayName', 'bio', 'meetupLocations',
+          'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'displayName', 'program', 'yearLevel', 'bio',
+          'meetupLocations', 'createdAt', 'updatedAt'
+        ])
+        && validText(data.displayName, 2, 60)
+        && validText(data.bio, 0, 300)
+        && (!('program' in data) || data.program in programs())
+        && (!('yearLevel' in data) || data.yearLevel in yearLevels())
+        && validLocations(data.meetupLocations, 0)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function hasCompletedProfile() {
+      let path = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(path) && validProfile(get(path).data);
+    }
+
+    function validSettings(data) {
+      return exactKeys(data, [
+          'inAppMessageNotices', 'createdAt', 'updatedAt'
+        ])
+        && data.inAppMessageNotices is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn();
+      allow list: if signedIn() && boundedQuery(50);
+
+      allow create: if isOwner(uid)
+        && validProfile(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isOwner(uid)
+        && validProfile(request.resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName', 'program', 'yearLevel', 'bio',
+          'meetupLocations', 'updatedAt'
+        ])
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if false;
+
+      match /private/settings {
+        allow get: if isOwner(uid);
+
+        allow create: if isOwner(uid)
+          && validSettings(request.resource.data)
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+
+        allow update: if isOwner(uid)
+          && validSettings(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'inAppMessageNotices', 'updatedAt'
+          ])
+          && request.resource.data.updatedAt == request.time;
+
+        allow list, delete: if false;
+      }
+
+      match /likes/{listingId} {
+        allow get: if isOwner(uid);
+        allow list: if isOwner(uid) && boundedQuery(50);
+
+        allow create: if isOwner(uid)
+          && verified()
+          && validAutoId(listingId)
+          && exactKeys(request.resource.data, ['createdAt'])
+          && request.resource.data.createdAt == request.time
+          && exists(listingPath(listingId))
+          && acceptsNewContact(get(listingPath(listingId)).data);
+
+        allow update: if false;
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    function acceptsNewContact(data) {
+      return data.moderationStatus == 'visible'
+        && data.status in ['Available', 'Pending'];
+    }
+
+    match /listings/{listingId} {
+      allow get: if signedIn()
+        && (
+          resource.data.sellerId == request.auth.uid
+          || resource.data.moderationStatus == 'visible'
+        );
+
+      allow list: if signedIn()
+        && boundedQuery(50)
+        && (
+          resource.data.sellerId == request.auth.uid
+          || acceptsNewContact(resource.data)
+        );
+
+      allow create, update, delete: if false;
+    }
+
+    function isParticipant(data) {
+      return signedIn()
+        && (
+          request.auth.uid == data.buyerId
+          || request.auth.uid == data.sellerId
+          || request.auth.uid in data.participantIds
+        );
+    }
+
+    function validMarkers(data, maximum) {
+      return exactKeys(data, ['buyer', 'seller'])
+        && data.buyer is int
+        && data.seller is int
+        && data.buyer >= 0
+        && data.seller >= 0
+        && data.buyer <= maximum
+        && data.seller <= maximum;
+    }
+
+    function validMessage(data) {
+      return exactKeys(data, [
+          'senderId', 'text', 'sequence', 'createdAt'
+        ])
+        && validText(data.senderId, 1, 128)
+        && validText(data.text, 1, 300)
+        && data.sequence is int
+        && data.sequence >= 1
+        && data.createdAt is timestamp;
+    }
+
+    function validPreview(data) {
+      return exactKeys(data, [
+          'id', 'senderId', 'text', 'sequence', 'createdAt'
+        ])
+        && validAutoId(data.id)
+        && validText(data.senderId, 1, 128)
+        && validText(data.text, 1, 300)
+        && data.sequence is int
+        && data.sequence >= 1
+        && data.createdAt is timestamp;
+    }
+
+    function validConversation(data, conversationId) {
+      return exactKeys(data, [
+          'listingId', 'buyerId', 'sellerId', 'participantIds',
+          'listingSnapshot', 'createdAt', 'lastMessageAt',
+          'sequence', 'lastMessage', 'latestIncomingSeq',
+          'readSeq', 'bellSeenSeq'
+        ])
+        && validAutoId(data.listingId)
+        && validText(data.buyerId, 1, 128)
+        && validText(data.sellerId, 1, 128)
+        && conversationId == data.listingId + '_' + data.buyerId
+        && data.buyerId != data.sellerId
+        && data.participantIds == [data.buyerId, data.sellerId]
+        && exactKeys(data.listingSnapshot, ['title', 'priceCentavos'])
+        && validText(data.listingSnapshot.title, 5, 100)
+        && validMoney(data.listingSnapshot.priceCentavos)
+        && data.createdAt is timestamp
+        && data.lastMessageAt is timestamp
+        && data.sequence is int
+        && data.sequence >= 1
+        && data.sequence <= 2147483647
+        && validPreview(data.lastMessage)
+        && data.lastMessage.senderId in data.participantIds
+        && data.lastMessage.sequence == data.sequence
+        && data.lastMessage.createdAt == data.lastMessageAt
+        && validMarkers(data.latestIncomingSeq, data.sequence)
+        && validMarkers(data.readSeq, data.sequence)
+        && validMarkers(data.bellSeenSeq, data.sequence)
+        && data.readSeq.buyer <= data.latestIncomingSeq.buyer
+        && data.readSeq.seller <= data.latestIncomingSeq.seller
+        && data.bellSeenSeq.buyer <= data.latestIncomingSeq.buyer
+        && data.bellSeenSeq.seller <= data.latestIncomingSeq.seller;
+    }
+
+    function isOwnCanonicalId(conversationId) {
+      return signedIn()
+        && validAutoId(conversationId.split('_')[0])
+        && conversationId
+          == conversationId.split('_')[0] + '_' + request.auth.uid;
+    }
+
+    function previewMatchesMessage(preview, message, messageId) {
+      return preview.id == messageId
+        && preview.senderId == message.senderId
+        && preview.text == message.text
+        && preview.sequence == message.sequence
+        && preview.createdAt == message.createdAt;
+    }
+
+    function hasMatchingNewMessage(conversationId, after) {
+      let path = messagePath(conversationId, after.lastMessage.id);
+      return after.lastMessage.senderId == request.auth.uid
+        && after.lastMessageAt == request.time
+        && !exists(path)
+        && validMessage(getAfter(path).data)
+        && previewMatchesMessage(
+          after.lastMessage,
+          getAfter(path).data,
+          after.lastMessage.id
+        );
+    }
+
+    function validNewConversation(conversationId, data) {
+      let listing = get(listingPath(data.listingId)).data;
+      return verified()
+        && data.buyerId == request.auth.uid
+        && hasCompletedProfile()
+        && acceptsNewContact(listing)
+        && data.sellerId == listing.sellerId
+        && data.listingSnapshot == {
+          'title': listing.title,
+          'priceCentavos': listing.priceCentavos
+        }
+        && data.sequence == 1
+        && data.createdAt == request.time
+        && data.lastMessage.senderId == data.buyerId
+        && data.latestIncomingSeq == {'buyer': 0, 'seller': 1}
+        && data.readSeq == {'buyer': 0, 'seller': 0}
+        && data.bellSeenSeq == {'buyer': 0, 'seller': 0}
+        && hasMatchingNewMessage(conversationId, data);
+    }
+
+    function validSend(conversationId, before, after) {
+      let buyerSending = request.auth.uid == before.buyerId;
+      return verified()
+        && after.diff(before).affectedKeys().hasOnly([
+          'sequence', 'lastMessage', 'lastMessageAt', 'latestIncomingSeq'
+        ])
+        && after.sequence == before.sequence + 1
+        && after.latestIncomingSeq.buyer == (
+          buyerSending ? before.latestIncomingSeq.buyer : after.sequence
+        )
+        && after.latestIncomingSeq.seller == (
+          buyerSending ? after.sequence : before.latestIncomingSeq.seller
+        )
+        && hasMatchingNewMessage(conversationId, after);
+    }
+
+    function validMarkerAdvance(before, after, maximum, ownRole, otherRole) {
+      return after[otherRole] == before[otherRole]
+        && after[ownRole] >= before[ownRole]
+        && after[ownRole] <= maximum[ownRole];
+    }
+
+    function validReadUpdate(before, after) {
+      let ownRole = request.auth.uid == before.buyerId ? 'buyer' : 'seller';
+      let otherRole = ownRole == 'buyer' ? 'seller' : 'buyer';
+      return after.diff(before).affectedKeys().hasOnly([
+          'readSeq', 'bellSeenSeq'
+        ])
+        && validMarkerAdvance(
+          before.readSeq, after.readSeq,
+          before.latestIncomingSeq, ownRole, otherRole
+        )
+        && validMarkerAdvance(
+          before.bellSeenSeq, after.bellSeenSeq,
+          before.latestIncomingSeq, ownRole, otherRole
+        );
+    }
+
+    match /conversations/{conversationId} {
+      allow get: if signedIn()
+        && (
+          (resource != null && isParticipant(resource.data))
+          || (
+            !exists(conversationPath(conversationId))
+            && isOwnCanonicalId(conversationId)
+          )
+        );
+
+      allow list: if isParticipant(resource.data)
+        && boundedQuery(50);
+
+      allow create: if signedIn()
+        && validConversation(request.resource.data, conversationId)
+        && validNewConversation(conversationId, request.resource.data);
+
+      allow update: if isParticipant(resource.data)
+        && validConversation(request.resource.data, conversationId)
+        && (
+          validSend(conversationId, resource.data, request.resource.data)
+          || validReadUpdate(resource.data, request.resource.data)
+        );
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        function canReadExistingConversation() {
+          return signedIn()
+            && exists(conversationPath(conversationId))
+            && isParticipant(get(conversationPath(conversationId)).data);
+        }
+
+        function hasMatchingParentUpdate() {
+          let path = conversationPath(conversationId);
+          let after = getAfter(path).data;
+          return isParticipant(after)
+            && previewMatchesMessage(
+              after.lastMessage, request.resource.data, messageId
+            )
+            && after.sequence == request.resource.data.sequence
+            && after.lastMessageAt == request.time
+            && (
+              (
+                !exists(path)
+                && after.buyerId == request.auth.uid
+                && after.sequence == 1
+              )
+              || (
+                exists(path)
+                && after.sequence == get(path).data.sequence + 1
+              )
+            );
+        }
+
+        allow get: if canReadExistingConversation()
+          || (
+            signedIn()
+            && isOwnCanonicalId(conversationId)
+            && !exists(conversationPath(conversationId))
+            && !exists(messagePath(conversationId, messageId))
+          );
+
+        allow list: if canReadExistingConversation()
+          && boundedQuery(100);
+
+        allow create: if verified()
+          && validAutoId(messageId)
+          && validMessage(request.resource.data)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && hasMatchingParentUpdate();
+
+        allow update, delete: if false;
+      }
+    }
+
+    match /uploadSessions/{sessionId} {
+      allow read, write: if false;
+    }
+
+    match /uploadControls/{uid} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
