@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { PROGRAMS, YEAR_LEVELS } from "@/types/school.types"
-
+import { Timestamp } from "firebase/firestore";
+import { locations } from "@/types/market.types";
 import { isSchoolEmail, SCHOOL_EMAIL_DOMAIN } from "@/lib/auth/policy"
 export { SCHOOL_EMAIL_DOMAIN } from "@/lib/auth/policy"
 
@@ -48,6 +49,36 @@ export const SignUpSchema = z
     path: ["confirm-password"],
   })
 
+export const UserSchema = z.strictObject({
+  displayName: z
+    .string()
+    .trim()
+    .min(2)
+    .max(60),
+
+  program: z
+    .enum(PROGRAMS.map((program) => program.value))
+    .optional(),
+
+  yearLevel: z
+    .enum(YEAR_LEVELS.map((year) => year.value))
+    .optional(),
+
+  bio: z.string().max(300),
+
+  meetupLocations: z
+    .array(z.enum(locations))
+    .max(3)
+    .refine(
+      (values) => new Set(values).size === values.length,
+      "Meetup locations must be unique."
+    ),
+
+  createdAt: z.instanceof(Timestamp),
+  updatedAt: z.instanceof(Timestamp),
+});
+
+export type UserProfile = z.infer<typeof UserSchema>;
 export type SignupInput = z.infer<typeof SignUpSchema>
 export type SignupErrors = z.core.$ZodFlattenedError<
   z.output<typeof SignUpSchema>

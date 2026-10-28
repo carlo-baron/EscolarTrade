@@ -24,7 +24,6 @@ export function useLogin() {
       router.replace(authRedirect(result.error))
       return result
     }
-    // Keep Firebase client auth for browser Firestore listeners.
     router.replace("/marketplace")
     router.refresh()
     return result
