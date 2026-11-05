@@ -1,29 +1,40 @@
 import { initializeApp, getApps, getApp } from "firebase/app"
 import { connectAuthEmulator, getAuth } from "firebase/auth"
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore"
+import {
+  firebaseAppName,
+  firebaseEmulators,
+  firebaseProjectId,
+  useFirebaseEmulators,
+} from "@/lib/firebase-config"
 
 const firebaseConfig = {
   apiKey: "AIzaSyA7pjo56VqPt1DrY3yEvhHLm-ZLT21gGAQ",
   authDomain: "escolar-trade.firebaseapp.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "escolar-trade",
+  projectId: firebaseProjectId,
   storageBucket: "escolar-trade.firebasestorage.app",
   messagingSenderId: "287890627333",
   appId: "1:287890627333:web:06ecab30896a00c403356c",
   measurementId: "G-BVDZ6EQ2DQ",
 }
 
-const isNewApp = getApps().length === 0
-const app = isNewApp ? initializeApp(firebaseConfig) : getApp()
+const isNewApp = !getApps().some((app) => app.name === firebaseAppName)
+const app = isNewApp
+  ? initializeApp(firebaseConfig, firebaseAppName)
+  : getApp(firebaseAppName)
 const db = getFirestore(app)
 const auth = getAuth(app)
 
-if (
-  process.env.NODE_ENV !== "production" &&
-  process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true" &&
-  isNewApp
-) {
-  connectAuthEmulator(auth, "http://127.0.0.1:9099")
-  connectFirestoreEmulator(db, "127.0.0.1", 8080)
+if (useFirebaseEmulators && isNewApp) {
+  connectAuthEmulator(
+    auth,
+    `http://${firebaseEmulators.host}:${firebaseEmulators.authPort}`
+  )
+  connectFirestoreEmulator(
+    db,
+    firebaseEmulators.host,
+    firebaseEmulators.firestorePort
+  )
 }
 
 export { db, auth }
