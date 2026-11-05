@@ -56,13 +56,65 @@ or changes the Spark plan.
 
 ## Local validation
 
+### Switching Firebase environments
+
+Set a single variable in `.env.local`:
+
+```dotenv
+NEXT_PUBLIC_FIREBASE_MODE=emulator
+```
+
+Use `live` to connect to the real `escolar-trade` project. Use `emulator` for
+`demo-escolartrade` with Auth on `127.0.0.1:9099` and Firestore on
+`127.0.0.1:8080`. Missing mode defaults to `emulator`; other values are rejected.
+The browser and Admin SDK share the mode and project selection. Firebase app
+names differ by mode so persisted browser Auth accounts are kept separate.
+
+Leave `NODE_ENV` to Next.js: it controls framework behavior, independently of
+Firebase mode. Both modes work with `npm run dev` and production builds. Restart
+the Next.js server and reload the browser after switching. For `npm start`, set
+the mode **before building**, rebuild, and restart: Next.js embeds public env
+variables into both the browser bundle and compiled server code. Changing only
+the runtime variable cannot switch an existing build. Log in again after
+switching; the existing server session cookie belongs to the previous environment.
+Accounts and data are separate and are not copied between environments.
+
+Live mode needs valid server credentials in `FIREBASE_CLIENT_EMAIL` and
+`FIREBASE_PRIVATE_KEY`, or Application Default Credentials for the live project.
+Emulator mode does not use service-account credentials. The old application
+overrides (`FIREBASE_PROJECT_ID`, `GCLOUD_PROJECT`,
+`NEXT_PUBLIC_FIREBASE_PROJECT_ID`, and `NEXT_PUBLIC_USE_FIREBASE_EMULATORS`) no
+longer select the application's project or mode. Admin sets its two emulator host
+variables automatically in emulator mode and removes stale values in live mode.
+Remove old overrides from local env files to avoid confusion. Keep the mode in
+one env file; `.env.development.local` takes priority over `.env.local` during
+development, and shell variables take priority over both.
+
+For emulator mode, start the services separately, then run the app:
+
+```bash
+firebase emulators:start --only auth,firestore --project demo-escolartrade
+# In another terminal:
+npm run dev
+```
+
+Live mode does not need the emulator process. The marketplace currently still
+uses sample listing fixtures; switching mode does not add Firestore data fetching.
+
+### Checks
+
 The tests use Node 24's built-in test runner and TypeScript already installed in
 the project. Mocked unit tests cover the server boundary without Firebase access:
 
 ```bash
 npm run test:auth
+npm run test:firebase
 npm run typecheck
 ```
+
+`test:firebase` checks both actual SDK configurations in fresh processes for
+development and production, including stale overrides and invalid modes. It does
+not send requests to live Firebase or require running emulators.
 
 Use an isolated demo project for emulator tests, never the live project:
 
@@ -85,22 +137,21 @@ Build first, then start a separate local server against the same demo emulators:
 
 ```bash
 npm run build -- --webpack
-FIREBASE_PROJECT_ID=demo-escolartrade GCLOUD_PROJECT=demo-escolartrade \
-FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
-FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm start -- --port 3100
+npm start -- --port 3100
 # In another terminal:
 GCLOUD_PROJECT=demo-escolartrade \
 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm run test:auth:http
 ```
 
-The HTTP suite sends tokens from the Auth emulator directly to the app; it does
-not execute browser JavaScript. For a manual browser flow, run `npm run dev` with
-the server emulator variables above plus
-`NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-escolartrade` and
-`NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true`. The development client uses the local
-Auth/Firestore ports from `firebase.json`. Test verification links using the Auth
-emulator, resend failures, browser Firestore listeners, client logout, and back
+Set `NEXT_PUBLIC_FIREBASE_MODE=emulator` in `.env.local` before the build above.
+The test scripts initialize their own Admin apps, so they still require the
+explicit demo project and host variables shown in their commands; the application
+does not. The HTTP suite sends tokens from the Auth emulator directly to the app;
+it does not execute browser JavaScript. For a manual browser flow, use emulator
+mode and run `npm run dev`. The client uses the local Auth/Firestore ports matching
+`firebase.json`. Test verification links using the Auth emulator, resend failures,
+browser Firestore listeners, client logout, and back
 navigation. Secure cookies require HTTPS for browser testing of a production build.
 
 The targeted Rules change is a prototype requiring review before broad release.
