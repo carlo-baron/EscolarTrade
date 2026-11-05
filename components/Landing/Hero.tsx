@@ -91,7 +91,7 @@ function FeaturedListingCard(){
 const PHRASES = [
 	{
 		icon: MailCheck,
-		text: "Verified @ceu.edu.ph email"
+		text: "Verified @mls.ceu.edu.ph email"
 	},
 	{
 		icon: PhilippinePeso,

@@ -238,6 +238,7 @@ export const SAMPLE_CHAT = {
     id: "homemade-brownies",
 		status: "Available",
 		image: "https://i.pravatar.cc/150?img=12",
+		slug: "homemade-chocoloate-brownies-homemade-brownies",
     title: "Homemade Chocolate Brownies",
     price: 80,
   },
