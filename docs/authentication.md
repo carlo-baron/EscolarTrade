@@ -44,15 +44,39 @@ For future server data access and mutations, call `requireSession` inside each
 entry point. Derive the UID from its result. For listing edits, the existing editor
 now calls `requireListingOwner`, which loads the stored seller ID. Mutations must
 also call `assertListingOwner` on the document read **inside their transaction**,
-and validate editable fields. Admin bypasses Rules. This repository currently has
-no listing mutation action or update service; do not infer that listing publishing
-or editing is implemented. Direct client listing writes remain denied.
+and validate editable fields. Admin bypasses Rules. The current `createListing`
+action only authenticates and validates input; its success path does not yet
+write or publish a listing. Direct client listing writes remain denied.
 
 Admin initialization is server-only. It reuses the existing service-account
 environment variables or Application Default Credentials. Never expose these as
 `NEXT_PUBLIC_` values. Session-cookie verification requires Admin access from the
 Next.js server. Nothing here deploys Firebase settings, requires Cloud Functions,
 or changes the Spark plan.
+
+## Vercel runtime configuration
+
+For a live deployment, set `NEXT_PUBLIC_FIREBASE_MODE=live` before the build
+and configure the server credentials described above in Vercel's environment
+variables for the deployment environment.
+
+The current dependency chain (`firebase-admin@14.5.0` → `jwks-rsa@4.1.0` →
+`jose@6`) loads an ES module through CommonJS `require()`. Vercel disables
+this Node.js feature by default. If login fails with `ERR_REQUIRE_ESM` from
+`jwks-rsa/src/utils.js`, add this Vercel environment variable and redeploy:
+
+```dotenv
+NODE_OPTIONS=--experimental-require-module
+```
+
+If `NODE_OPTIONS` already contains other flags, append this flag to its value.
+This follows [Vercel's documented runtime setting](https://vercel.com/docs/functions/runtimes/node-js/advanced-node-configuration#experimental-node.js-require-of-es-module).
+Use a supported Node.js version meeting Firebase Admin's requirement (Node 22
+or newer); the local reproduction and fix were checked on Node 24.14.0.
+On November 5, 2026, the user reported hosted login working after applying this
+setting and redeploying. This is a runtime compatibility workaround. Once a
+release addresses the [upstream module-loading issue](https://github.com/auth0/node-jwks-rsa/pull/508),
+update the dependencies and test without the flag before removing it.
 
 ## Local validation
 
