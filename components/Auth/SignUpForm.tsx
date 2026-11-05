@@ -88,6 +88,7 @@ export function SignUpForm() {
         <VerificationInstructions />
       ) : (
         <form
+					method="post"
           onSubmit={(event) => {
             event.preventDefault()
             setSubmitting(true)

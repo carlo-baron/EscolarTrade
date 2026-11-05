@@ -31,6 +31,7 @@ export function LoginForm({
 
   return (
     <form
+			method="post"
       onSubmit={async (event) => {
         event.preventDefault()
         setSubmitting(true)

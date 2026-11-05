@@ -1,4 +1,4 @@
-import "server-only" // errors at build time if imported in a client component
+import "server-only"
 import {
   initializeApp,
   getApps,
