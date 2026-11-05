@@ -49,8 +49,12 @@ export function LandingNavbar(){
 				</div>
 
 				<div className="auth flex gap-2">
-					<Button variant="outline">Log In</Button>
-					<Button>Sign Up</Button>
+					<Link href="/auth?tab=login">
+						<Button variant="outline">Log In</Button>
+					</Link>
+					<Link href="/auth?tab=signup">
+						<Button>Sign Up</Button>
+					</Link>
 				</div>
 			</nav>
 		</header>

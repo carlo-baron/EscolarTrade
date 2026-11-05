@@ -3,7 +3,7 @@ import { ListingImages } from "@/components/Marketplace/ListingDetails/ListingIm
 import { ListingDetailCard } from "@/components/Marketplace/ListingDetails/ListingDetailCard";
 import { SimilarItemByCategory } from "@/components/Marketplace/ListingDetails/SimilarItemByCategory";
 
-interface Props{
+interface ListingDetailProps{
 	params: Promise<{ slug: string }>
 }
 
@@ -46,7 +46,7 @@ const crumbs = {
 	page: "Principles of Anatomy and Physiology"
 };
 
-export default async function ListingDetailsPage({ params } : Props){
+export default async function ListingDetailsPage({ params } : ListingDetailProps){
 	const { slug } = await params;
 
 	return(

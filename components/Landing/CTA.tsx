@@ -21,7 +21,7 @@ const FEATS = [
 	{
 		icon: MailCheck,
 		name: "Institutional SSO",
-		description: "Only users with valid @ceu.edu.ph domains can register, message, and list items."
+		description: "Use a verified @mls.ceu.edu.ph account to message and list items."
 	},
 	{
 		icon: MapPinCheck,

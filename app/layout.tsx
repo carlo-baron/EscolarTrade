@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google"
 import { Metadata } from "next";
+import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -30,8 +31,11 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontMono.variable, "font-sans", inter.variable, spaceGroteskHeading.variable)}
     >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="scroll-smooth snap-y">
+        <ThemeProvider>
+					{children}
+					<Toaster position="top-center"/>
+				</ThemeProvider>
       </body>
     </html>
   )
