@@ -116,6 +116,25 @@ and content, not pixel-perfect overrides. Do not add extra sections or features.
 Password reset controls currently have no delivery handler; never show a
 successful dispatch claim unless an actual delivery integration confirms it.
 
+### User preferences confirmed 2026-11-07
+
+- Use Tailwind utilities and existing theme tokens for page/component styling.
+  Do not introduce CSS strings such as `layoutStyles`, embedded style blocks,
+  or inline layout styles to work around missing generated utilities.
+- Reuse the installed shadcn components and their Base UI APIs. For a single
+  condition selection, use `ToggleGroup` with `multiple={false}`. A Button
+  rendered as a Link needs `nativeButton={false}`.
+- Follow the actual data model and latest user decisions over reference images.
+  Extra Details was deliberately removed from the create-listing form. Its live
+  preview should resemble the existing `ListingCard`.
+- Keep edits within the requested scope. When component extraction is authorized,
+  move cohesive, substantial or repeated pieces into the feature's component
+  folder; keep simple field groups and page-specific form orchestration together.
+  Organization-only work should preserve existing appearance and behavior.
+- Inspect the CSS served by the existing dev server when utilities appear missing.
+  This session's layout failure was resolved by restarting with a fresh Next dev
+  cache; do not replace Tailwind with custom CSS to conceal a stale build.
+
 ## Commands and validation
 
 - `npm run dev`: Next development server.
