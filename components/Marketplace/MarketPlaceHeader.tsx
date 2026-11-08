@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { FormEvent } from "react"
+import { SubmitEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
   Bell,
@@ -60,7 +60,7 @@ export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
     return query ? `/marketplace?${query}` : "/marketplace"
   }
 
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
+  function handleSearch(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const formData = new FormData(event.currentTarget)
@@ -156,7 +156,7 @@ export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
           <Button
             variant="ghost"
             className="my-2 ml-auto shrink-0"
-            onClick={() => router.push("/listing/create")}
+            onClick={() => router.push("/my-listing/new")}
           >
             <Plus />
             Post a Listing
