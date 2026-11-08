@@ -1,14 +1,11 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useState, type SubmitEvent } from "react"
 import Link from "next/link"
 import { ArrowRight, Info } from "lucide-react"
 
 import { ListingFormSection } from "@/components/Marketplace/ListingForm/ListingFormSection"
-import {
-  ListingPhotos,
-  type ListingPhoto,
-} from "@/components/Marketplace/ListingForm/ListingPhotos"
+import { ListingPhotos } from "@/components/Marketplace/ListingForm/ListingPhotos"
 import { ListingPreview } from "@/components/Marketplace/ListingForm/ListingPreview"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -45,12 +42,12 @@ export default function CreateListingPage() {
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
   const [meetupLocations, setMeetupLocations] = useState<Location[]>([])
-  const [photos, setPhotos] = useState<ListingPhoto[]>([])
+  const [photos, setPhotos] = useState<File[]>([])
   const [photoError, setPhotoError] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [publishNotice, setPublishNotice] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     setPublishNotice(false)
     const result = CreateListingSchema.safeParse({
@@ -107,7 +104,7 @@ export default function CreateListingPage() {
 
             <ListingFormSection id="details-heading" title="2. Item Details">
               <FieldGroup>
-                <Field data-invalid={!!errors.title}>
+                <Field>
                   <div className="flex items-center justify-between gap-3">
                     <FieldLabel htmlFor="title">
                       Title <span className="text-destructive">*</span>
@@ -134,7 +131,7 @@ export default function CreateListingPage() {
                   />
                   <FieldError id="title-error">{errors.title}</FieldError>
                 </Field>
-                <Field data-invalid={!!errors.category}>
+                <Field>
                   <FieldLabel htmlFor="category">
                     Category <span className="text-destructive">*</span>
                   </FieldLabel>
@@ -159,7 +156,7 @@ export default function CreateListingPage() {
                   </NativeSelect>
                   <FieldError id="category-error">{errors.category}</FieldError>
                 </Field>
-                <Field data-invalid={!!errors.condition}>
+                <Field>
                   <span id="condition-label" className="text-sm font-medium">
                     Condition <span className="text-destructive">*</span>
                   </span>
@@ -191,7 +188,7 @@ export default function CreateListingPage() {
                     {errors.condition}
                   </FieldError>
                 </Field>
-                <Field data-invalid={!!errors.description}>
+                <Field>
                   <FieldLabel htmlFor="description">
                     Description <span className="text-destructive">*</span>
                   </FieldLabel>
@@ -220,7 +217,7 @@ export default function CreateListingPage() {
             </ListingFormSection>
 
             <ListingFormSection id="price-heading" title="3. Price">
-              <Field data-invalid={!!errors.priceCentavos}>
+              <Field>
                 <FieldLabel htmlFor="priceCentavos">
                   Price (PHP) <span className="text-destructive">*</span>
                 </FieldLabel>
@@ -257,7 +254,7 @@ export default function CreateListingPage() {
               title="4. Meetup Spots"
               description="Choose convenient locations. Confirm the meetup time and place with the buyer in chat."
             >
-              <Field data-invalid={!!errors.meetupLocations}>
+              <Field>
                 <div
                   id="meetupLocations"
                   role="group"
@@ -317,7 +314,7 @@ export default function CreateListingPage() {
             description={description}
             price={price}
             meetupLocations={meetupLocations}
-            imageUrl={photos[0]?.url}
+            imageFile={photos[0]}
           />
 
           <div className="space-y-4 min-[900px]:col-start-1">

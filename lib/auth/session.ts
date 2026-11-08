@@ -10,7 +10,6 @@ import {
   verifySchoolSession,
 } from "@/lib/auth/session-service"
 
-// Deliberately not cached across requests or mutations.
 export async function requireSession() {
   const cookie = (await cookies()).get(SESSION_COOKIE_NAME)?.value
   try {
@@ -19,6 +18,14 @@ export async function requireSession() {
     if (error instanceof SessionError) redirect(authRedirect(error.code))
     throw error
   }
+}
+
+export async function requireProfile(uid: string){
+	try{
+		return await adminDb.collection("users").doc(uid).get();
+	}catch(error){
+		throw error;
+	}
 }
 
 export async function requireListingOwner(listingId: string) {
