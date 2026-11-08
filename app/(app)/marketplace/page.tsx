@@ -78,16 +78,20 @@ export default function MarketplacePage() {
 						</p>
 					</div>
 					<div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-						<Button variant="secondary" size="lg">
-							<CirclePlus />
-							List an Item Now
-						</Button>
-						<Button
-							variant="link"
-							className="text-background"
-						>
-							Seller Guide &amp; Meetup Rules
-						</Button>
+						<Link href="/my-listing/new">
+							<Button variant="secondary" size="lg">
+								<CirclePlus />
+								List an Item Now
+							</Button>
+						</Link>
+						<Link href="help">
+							<Button
+								variant="link"
+								className="text-background"
+							>
+								Seller Guide &amp; Meetup Rules
+							</Button>
+						</Link>
 					</div>
 				</div>
 			</section>

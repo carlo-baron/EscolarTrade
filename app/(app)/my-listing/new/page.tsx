@@ -1,14 +1,13 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useState, type SubmitEvent } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ArrowRight, Info } from "lucide-react"
+import { toast } from "sonner"
 
 import { ListingFormSection } from "@/components/Marketplace/ListingForm/ListingFormSection"
-import {
-  ListingPhotos,
-  type ListingPhoto,
-} from "@/components/Marketplace/ListingForm/ListingPhotos"
+import { ListingPhotos } from "@/components/Marketplace/ListingForm/ListingPhotos"
 import { ListingPreview } from "@/components/Marketplace/ListingForm/ListingPreview"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -37,46 +36,110 @@ import {
   locations,
   type Location,
 } from "@/types/market.types"
+import { uploadImages } from "./image.server"
+import { createListing } from "./listing.server"
 
 export default function CreateListingPage() {
+  const router = useRouter()
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState("")
   const [condition, setCondition] = useState("")
   const [description, setDescription] = useState("")
   const [price, setPrice] = useState("")
   const [meetupLocations, setMeetupLocations] = useState<Location[]>([])
-  const [photos, setPhotos] = useState<ListingPhoto[]>([])
-  const [photoError, setPhotoError] = useState("")
+  const [photos, setPhotos] = useState<File[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [publishNotice, setPublishNotice] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setPublishNotice(false)
-    const result = CreateListingSchema.safeParse({
-      title,
-      category,
-      condition,
-      description,
-      priceCentavos: price.trim() ? Math.round(Number(price) * 100) : 0,
-      meetupLocations,
-    })
-    const nextErrors: Record<string, string> = {}
-    if (!result.success) {
-      for (const issue of result.error.issues) {
-        const field = String(issue.path[0])
-        nextErrors[field] ??= issue.message
-      }
-    }
-    const missingPhotos = photos.length < 3
-    setPhotoError(missingPhotos ? "Add 3 photos of your item." : "")
+  function showErrors(nextErrors: Record<string, string>) {
     setErrors(nextErrors)
-    if (missingPhotos) {
-      document.getElementById("photos")?.focus()
-    } else if (Object.keys(nextErrors).length) {
-      document.getElementById(Object.keys(nextErrors)[0])?.focus()
-    } else {
-      setPublishNotice(true)
+    const firstError = Object.keys(nextErrors)[0]
+    if (firstError) {
+      document
+        .getElementById(firstError === "images" ? "photos" : firstError)
+        ?.focus()
+    }
+  }
+
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (isSubmitting) return
+    setErrors({})
+    setIsSubmitting(true)
+    let errorField = "images"
+
+    try {
+      const images = await uploadImages(photos)
+      const payload = {
+        images,
+        title,
+        category,
+        condition,
+        description,
+        priceCentavos: price.trim() ? Number(price) : 0,
+        meetupLocations,
+      }
+      const result = CreateListingSchema.safeParse(payload)
+
+      if (!result.success) {
+        const nextErrors: Record<string, string> = {}
+        for (const issue of result.error.issues) {
+          const field = String(issue.path[0])
+          nextErrors[field] ??= issue.message
+        }
+        showErrors(nextErrors)
+        return
+      }
+
+      errorField = "form-error"
+      const createdListing = await createListing({
+        ...result.data,
+        priceCentavos: payload.priceCentavos,
+      })
+
+      if (!createdListing.success) {
+        if ("errors" in createdListing && createdListing.errors) {
+          const nextErrors: Record<string, string> = {}
+          for (const [field, messages] of Object.entries(
+            createdListing.errors
+          )) {
+            if (messages?.[0]) nextErrors[field] = messages[0]
+          }
+          showErrors(nextErrors)
+        } else {
+          showErrors({
+            "form-error":
+              createdListing.error ?? "Unable to publish your listing.",
+          })
+        }
+        return
+      }
+
+      const listingUrl = `/marketplace/${createdListing.slug}`
+      toast.success("Listing published", {
+        description: "Your listing was created successfully.",
+        action: {
+          label: "View listing",
+          onClick: () => router.push(listingUrl),
+        },
+      })
+      setTitle("")
+      setCategory("")
+      setCondition("")
+      setDescription("")
+      setPrice("")
+      setMeetupLocations([])
+      setPhotos([])
+      setErrors({})
+    } catch (error) {
+      showErrors({
+        [errorField]:
+          errorField === "images"
+            ? "Unable to upload your photos. Check the photo requirements and try again."
+            : "Unable to publish your listing. Please try again.",
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -101,13 +164,15 @@ export default function CreateListingPage() {
             <ListingPhotos
               photos={photos}
               onPhotosChange={setPhotos}
-              error={photoError}
-              onErrorChange={setPhotoError}
+              error={errors.images ?? ""}
+              onErrorChange={(error) =>
+                setErrors((current) => ({ ...current, images: error }))
+              }
             />
 
             <ListingFormSection id="details-heading" title="2. Item Details">
               <FieldGroup>
-                <Field data-invalid={!!errors.title}>
+                <Field>
                   <div className="flex items-center justify-between gap-3">
                     <FieldLabel htmlFor="title">
                       Title <span className="text-destructive">*</span>
@@ -134,7 +199,7 @@ export default function CreateListingPage() {
                   />
                   <FieldError id="title-error">{errors.title}</FieldError>
                 </Field>
-                <Field data-invalid={!!errors.category}>
+                <Field>
                   <FieldLabel htmlFor="category">
                     Category <span className="text-destructive">*</span>
                   </FieldLabel>
@@ -159,7 +224,7 @@ export default function CreateListingPage() {
                   </NativeSelect>
                   <FieldError id="category-error">{errors.category}</FieldError>
                 </Field>
-                <Field data-invalid={!!errors.condition}>
+                <Field>
                   <span id="condition-label" className="text-sm font-medium">
                     Condition <span className="text-destructive">*</span>
                   </span>
@@ -191,7 +256,7 @@ export default function CreateListingPage() {
                     {errors.condition}
                   </FieldError>
                 </Field>
-                <Field data-invalid={!!errors.description}>
+                <Field>
                   <FieldLabel htmlFor="description">
                     Description <span className="text-destructive">*</span>
                   </FieldLabel>
@@ -220,7 +285,7 @@ export default function CreateListingPage() {
             </ListingFormSection>
 
             <ListingFormSection id="price-heading" title="3. Price">
-              <Field data-invalid={!!errors.priceCentavos}>
+              <Field>
                 <FieldLabel htmlFor="priceCentavos">
                   Price (PHP) <span className="text-destructive">*</span>
                 </FieldLabel>
@@ -257,7 +322,7 @@ export default function CreateListingPage() {
               title="4. Meetup Spots"
               description="Choose convenient locations. Confirm the meetup time and place with the buyer in chat."
             >
-              <Field data-invalid={!!errors.meetupLocations}>
+              <Field>
                 <div
                   id="meetupLocations"
                   role="group"
@@ -317,18 +382,20 @@ export default function CreateListingPage() {
             description={description}
             price={price}
             meetupLocations={meetupLocations}
-            imageUrl={photos[0]?.url}
+            imageFile={photos[0]}
           />
 
           <div className="space-y-4 min-[900px]:col-start-1">
-            {publishNotice && (
-              <Alert>
+            {errors["form-error"] && (
+              <Alert
+                id="form-error"
+                variant="destructive"
+                role="alert"
+                tabIndex={-1}
+              >
                 <Info />
-                <AlertTitle>Publishing is not connected yet</AlertTitle>
-                <AlertDescription>
-                  Your details passed validation, but your listing has not been
-                  posted. Keep this page open to continue editing.
-                </AlertDescription>
+                <AlertTitle>Listing could not be published</AlertTitle>
+                <AlertDescription>{errors["form-error"]}</AlertDescription>
               </Alert>
             )}
             <div className="flex items-center justify-between gap-4 border-t pt-6">
@@ -340,8 +407,14 @@ export default function CreateListingPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" size="lg" className="min-h-11 px-5">
-                Publish Listing <ArrowRight data-icon="inline-end" />
+              <Button
+                type="submit"
+                size="lg"
+                className="min-h-11 px-5"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Publishing..." : "Publish Listing"}{" "}
+                <ArrowRight data-icon="inline-end" />
               </Button>
             </div>
           </div>

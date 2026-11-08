@@ -11,6 +11,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "test:firebase": "node tests/firebase-mode.test.mjs",
+    "test:images": "node --import ./tests/register.mjs --experimental-test-module-mocks tests/uploadImage.test.mjs",
     "test:auth": "node --import ./tests/register.mjs --experimental-test-module-mocks tests/auth.test.mjs",
     "test:auth:emulator": "node --import ./tests/register.mjs tests/auth.emulator.test.mjs",
     "test:auth:http": "node tests/auth.http.test.mjs"
