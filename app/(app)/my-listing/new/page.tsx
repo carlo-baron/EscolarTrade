@@ -132,7 +132,6 @@ export default function CreateListingPage() {
       setPhotos([])
       setErrors({})
     } catch (error) {
-      console.log(error)
       showErrors({
         [errorField]:
           errorField === "images"
