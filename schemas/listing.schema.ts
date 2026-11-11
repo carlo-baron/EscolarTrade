@@ -5,6 +5,7 @@ import {
   locations,
 	listingStatuses,
 } from "@/types/market.types";
+import { PROGRAMS } from "@/types/school.types";
 
 export const CreateListingSchema = z.strictObject({
 	images: z.string().array().length(3),
@@ -88,3 +89,19 @@ export const ListingSchema = z.object({
 });
 
 export type ListingType = z.infer<typeof ListingSchema>;
+
+export const ListingWithSellerDetails = ListingSchema.extend({
+	seller: z.object({
+		displayName: z
+		.string()
+		.trim()
+		.min(2)
+		.max(60),
+
+		program: z
+		.enum(PROGRAMS.map((program) => program.value))
+		.optional(),
+	})
+});
+
+export type ListingDetailed = z.infer<typeof ListingWithSellerDetails>;

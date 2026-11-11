@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ListingType } from "@/schemas/listing.schema"
+import { ListingDetailed } from "@/schemas/listing.schema"
 
-export function ListingCard({ listing } : { listing: ListingType }){
+export function ListingCard({ listing } : { listing: ListingDetailed }){
 	return(
 		<Link href={`/marketplace/${listing.slug}`} >
 			<Card className="h-full relative w-full pt-0">
@@ -45,9 +45,9 @@ export function ListingCard({ listing } : { listing: ListingType }){
 				<CardFooter className="flex-1">
 					<div className="text-xs flex justify-between w-full gap-2">
 						<div className="flex items-center gap-1">
-							<p className="text-sm font-medium truncate">{listing.sellerId}</p>
+							<p className="text-sm font-medium truncate">{listing.seller.displayName}</p>
 							<p className="text-muted-foreground">
-								• {listing.sellerId}
+								• {listing.seller.program}
 							</p>
 						</div>
 

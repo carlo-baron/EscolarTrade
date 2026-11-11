@@ -13,9 +13,9 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import Link from "next/link"
-import { ListingType } from "@/schemas/listing.schema"
+import { ListingDetailed } from "@/schemas/listing.schema"
 
-export function ListingItem({ listing }: { listing: ListingType }) {
+export function ListingItem({ listing }: { listing: ListingDetailed }) {
   const [saved, setSaved] = useState(false)
 
   return (
@@ -45,10 +45,10 @@ export function ListingItem({ listing }: { listing: ListingType }) {
 					<ItemDescription>{listing.description}</ItemDescription>
 					<div className="hidden lg:flex flex-col gap-1 text-xs lg:flex-row lg:flex-wrap lg:gap-4">
 						<p>
-							<span className="font-medium">{listing.sellerId}</span>
+							<span className="font-medium">{listing.seller.displayName}</span>
 							<span className="text-muted-foreground">
 								{" "}
-								· {listing.sellerId}
+								· {listing.seller.program}
 							</span>
 						</p>
 						<p className="flex items-center gap-1 text-muted-foreground">
