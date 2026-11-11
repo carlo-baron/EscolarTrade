@@ -22,6 +22,15 @@ import {
 import { cn } from "@/lib/utils"
 import { categories } from "@/types/market.types"
 import { LogoutButton } from "@/components/Auth/LogoutButton"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type MarketplaceHeaderProps = {
   user: {
@@ -32,7 +41,7 @@ type MarketplaceHeaderProps = {
 }
 
 const HEADER_ACTIONS = [
-  { icon: MessageSquare, label: "Messages" },
+  { icon: MessageSquare, label: "Messages", href: "/messages" },
   { icon: Bell, label: "Notifications" },
   { icon: Heart, label: "Saved listings" },
 ]
@@ -99,26 +108,39 @@ export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
         </form>
 
         <div className="ml-auto flex items-center gap-2">
-          <LogoutButton />
-          {HEADER_ACTIONS.map(({ icon: Icon, label }) => (
-            <Button key={label} variant="ghost" size="icon" aria-label={label}>
-              <Icon />
-            </Button>
+          {HEADER_ACTIONS.map(({ icon: Icon, label, href }) => (
+						<Link key={label} href={href ?? ""}>
+							<Button variant="ghost" size="icon" aria-label={label}>
+								<Icon />
+							</Button>
+						</Link>
           ))}
         </div>
 
-        <div className="hidden items-center gap-2 border-l pl-4 lg:flex">
-          <span className="flex size-9 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-            {user.initials}
-          </span>
+				<DropdownMenu>
+					<DropdownMenuTrigger>
+						<div className="hidden items-center gap-2 border-l pl-4 lg:flex">
+							<span className="flex size-9 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+								{user.initials}
+							</span>
 
-          <div className="text-xs">
-            <p className="font-semibold">{user.name}</p>
-            <p className="text-muted-foreground">{user.subtitle}</p>
-          </div>
+							<div className="text-xs">
+								<p className="font-semibold">{user.name}</p>
+							</div>
 
-          <ChevronDown className="size-4 text-muted-foreground" />
-        </div>
+							<ChevronDown className="size-4 text-muted-foreground" />
+						</div>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent>
+						<DropdownMenuGroup>
+							<DropdownMenuLabel>My Account</DropdownMenuLabel>
+							<DropdownMenuItem>Profile</DropdownMenuItem>
+						</DropdownMenuGroup>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem render={<LogoutButton />} />
+					</DropdownMenuContent>
+				</DropdownMenu>
+
       </div>
 
       <div className="bg-muted/50">

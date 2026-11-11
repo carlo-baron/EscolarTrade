@@ -18,12 +18,11 @@ export function LogoutButton() {
       setPending(false)
       return
     }
-    // Discard the client router cache along with both authentication states.
     window.location.replace("/auth?tab=login")
   }
 
   return (
-    <Button type="button" variant="ghost" onClick={logout} disabled={pending}>
+    <Button type="button" variant="destructive" onClick={logout} disabled={pending} className="w-full font-normal">
       {pending ? "Logging out…" : "Log out"}
     </Button>
   )
