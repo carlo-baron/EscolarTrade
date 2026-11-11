@@ -3,9 +3,9 @@ import { z } from "zod"
 export const MAX_PHOTOS = 3
 export const MAX_FILE_SIZE = 2 * 1024 * 1024
 export const MIN_WIDTH = 320
-export const MAX_WIDTH = 1200
+export const MAX_WIDTH = 1920
 export const MIN_HEIGHT = 240
-export const MAX_HEIGHT = 720
+export const MAX_HEIGHT = 1080
 export const ACCEPTED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",

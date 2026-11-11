@@ -3,6 +3,7 @@ import {
   categories,
   conditions,
   locations,
+	listingStatuses,
 } from "@/types/market.types";
 
 export const CreateListingSchema = z.strictObject({
@@ -54,3 +55,36 @@ export const CreateListingSchema = z.strictObject({
 export type CreateListingInput = z.infer<
 typeof CreateListingSchema
 >;
+
+export const ListingSchema = z.object({
+  id: z.string(),
+
+  images: z.array(z.string().url()).length(3),
+  title: z.string(),
+  description: z.string(),
+
+  priceCentavos: z.number().int().nonnegative(),
+  initialPriceCentavos: z.number().int().nonnegative(),
+  previousPriceCentavos: z.number().int().nonnegative().nullable(),
+  priceChangedAt: z.date().nullable(),
+
+  category: z.enum(categories),
+  condition: z.enum(conditions),
+  meetupLocations: z.array(z.enum(locations)),
+
+  sellerId: z.string(),
+  slug: z.string(),
+  searchTokens: z.array(z.string()),
+
+  status: z.enum(listingStatuses),
+  moderationStatus: z.enum(["visible", "hidden", "banned"]),
+  moderationReason: z.string(),
+  moderationVersion: z.number().int(),
+
+  createdAt: z.date(),
+  publishedAt: z.date(),
+  updatedAt: z.date(),
+  soldAt: z.date().nullable(),
+});
+
+export type ListingType = z.infer<typeof ListingSchema>;

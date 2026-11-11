@@ -21,10 +21,10 @@ import { ItemGroup } from "@/components/ui/item"
 import { ListingCard } from "./ListingCard"
 import { ListingItem } from "./ListingItem"
 import { conditions, locations } from "@/types/market.types"
-import { Listing } from "@/types/market.types"
+import { ListingType } from "@/schemas/listing.schema"
 
 type MarketplaceBrowserProps = {
-  listings: Listing[]
+  listings: ListingType[]
 }
 
 export function MarketplaceBrowser({

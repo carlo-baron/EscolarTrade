@@ -12,16 +12,14 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
-import type { Listing } from "@/types/market.types"
 import Link from "next/link"
-import slugify from "slugify";
+import { ListingType } from "@/schemas/listing.schema"
 
-export function ListingItem({ listing }: { listing: Listing }) {
+export function ListingItem({ listing }: { listing: ListingType }) {
   const [saved, setSaved] = useState(false)
-	const slug = slugify(listing.title, { lower: true, trim: true }) + "-" + listing.id;
 
   return (
-		<Link href={`/marketplace/${slug}`} >
+		<Link href={`/marketplace/${listing.slug}`} >
 			<Item
 				variant="outline"
 				role="listitem"
@@ -30,7 +28,7 @@ export function ListingItem({ listing }: { listing: Listing }) {
 				<ItemMedia>
 					{/* eslint-disable-next-line @next/next/no-img-element */}
 					<img
-						src={listing.image[0]}
+						src={listing.images[0]}
 						alt={listing.title}
 						loading="lazy"
 						className="aspect-square w-20 rounded-sm object-cover"
@@ -47,21 +45,21 @@ export function ListingItem({ listing }: { listing: Listing }) {
 					<ItemDescription>{listing.description}</ItemDescription>
 					<div className="hidden lg:flex flex-col gap-1 text-xs lg:flex-row lg:flex-wrap lg:gap-4">
 						<p>
-							<span className="font-medium">{listing.seller.name}</span>
+							<span className="font-medium">{listing.sellerId}</span>
 							<span className="text-muted-foreground">
 								{" "}
-								· {listing.seller.program}
+								· {listing.sellerId}
 							</span>
 						</p>
 						<p className="flex items-center gap-1 text-muted-foreground">
 							<MapPin className="size-3 shrink-0" />
-							{listing.location[0]}
+							{listing.meetupLocations[0]}
 						</p>
 					</div>
 				</ItemContent>
 				<ItemActions className="basis-full justify-end lg:basis-auto">
 					<p className="font-semibold">
-						₱{listing.price.toLocaleString("en-PH")}
+						₱{(listing.priceCentavos / 100)}
 					</p>
 					<Button
 						variant="ghost"
