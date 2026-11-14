@@ -13,9 +13,9 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import Link from "next/link"
-import { ListingDetailed } from "@/schemas/listing.schema"
+import { ListingDetailedType } from "@/schemas/listing.schema"
 
-export function ListingItem({ listing }: { listing: ListingDetailed }) {
+export function ListingItem({ listing }: { listing: ListingDetailedType }) {
   const [saved, setSaved] = useState(false)
 
   return (

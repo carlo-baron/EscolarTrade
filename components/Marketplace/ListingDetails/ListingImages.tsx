@@ -6,14 +6,14 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
-import { Listing } from "@/types/market.types"
+import { ListingType } from "@/schemas/listing.schema"
 
 export function ListingImages({
 	listing
 }: {
-	listing: Listing
+	listing: ListingType
 }) {
-	const { image: images, title } = listing;
+	const { images, title } = listing;
   const [selectedImage, setSelectedImage] = useState(images[0]);
 
   return (

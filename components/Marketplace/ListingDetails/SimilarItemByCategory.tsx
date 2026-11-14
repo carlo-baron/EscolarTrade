@@ -8,14 +8,15 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel"
+import { ListingType } from "@/schemas/listing.schema";
 
-export function SimilarItemByCategory({ category } : { category: Category }){
+export function SimilarItemByCategory({ listing } : { listing: ListingType }){
 	return(
 		<section className="similar-listing">
 			<div className="flex flex-col lg:flex-row lg:justify-between lg:items-center">
-				<h2 className="text-2xl font-bold">Similar in {category}</h2>			
-				<Link className="items-center gap-2 flex text-sm" href={`/marketplace?category=${encodeURIComponent(category)}`}>
-					View all in {category}
+				<h2 className="text-2xl font-bold">Similar in {listing.category}</h2>			
+				<Link className="items-center gap-2 flex text-sm" href={`/marketplace?category=${encodeURIComponent(listing.category)}`}>
+					View all in {listing.category}
 					<ArrowRight size={14}/>
 				</Link>
 			</div>

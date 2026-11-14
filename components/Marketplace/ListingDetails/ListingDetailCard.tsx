@@ -18,13 +18,13 @@ import {
 } from "@/components/ui/card"
 import { Marker, MarkerContent } from "@/components/ui/marker";
 import { Separator } from "@/components/ui/separator";
-import { Listing } from "@/types/market.types";
 import { listingStatusColor } from "@/types/market.types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
+import { ListingDetailedType } from "@/schemas/listing.schema";
 
 // TODO: actual creation time of item
-export function ListingDetailCard({ listing } : { listing: Listing }){
+export function ListingDetailCard({ listing } : { listing: ListingDetailedType }){
 	return(
 		<div className="lg:max-w-[40%] w-full flex flex-col gap-4">
 			<Card>
@@ -37,7 +37,7 @@ export function ListingDetailCard({ listing } : { listing: Listing }){
 					</div>
 					<CardTitle className="text-2xl lg:text-4xl font-extrabold">{listing.title}</CardTitle>
 					<div className="items-center flex justify-between">
-						<p className="font-semibold text-base lg:text-xl">₱{listing.price}</p>
+						<p className="font-semibold text-base lg:text-xl">₱{listing.priceCentavos / 100}</p>
 						<Badge variant="secondary">
 							<span className={`rounded-full aspect-square w-2 ${listingStatusColor[listing.status]}`}></span>
 							{listing.status}
@@ -50,7 +50,7 @@ export function ListingDetailCard({ listing } : { listing: Listing }){
 					<p className="uppercasefont-medium text-muted-foreground mb-2">Meetup Spots</p>
 					<div className="spots flex flex-wrap gap-2">
 						{
-							listing.location.map(item => {
+							listing.meetupLocations.map(item => {
 								return(
 									<Badge className="px-4 py-2 rounded-xs text-lg" key={item}>{item}</Badge>
 								);
@@ -76,12 +76,12 @@ export function ListingDetailCard({ listing } : { listing: Listing }){
 			<Item variant="outline">
 				<ItemMedia>
 					<Avatar>
-						<AvatarImage src={listing.seller.name}/>
+						<AvatarImage src={listing.seller.displayName}/>
 						<AvatarFallback>BR</AvatarFallback>
 					</Avatar>
 				</ItemMedia>
 				<ItemContent>
-					<ItemTitle>{listing.seller.name}</ItemTitle>
+					<ItemTitle>{listing.seller.displayName}</ItemTitle>
 					<ItemDescription>{listing.seller.program}</ItemDescription>
 				</ItemContent>
 				<ItemActions>

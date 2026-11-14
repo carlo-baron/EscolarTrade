@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ListingDetailed } from "@/schemas/listing.schema"
+import { ListingDetailedType } from "@/schemas/listing.schema"
 
-export function ListingCard({ listing } : { listing: ListingDetailed }){
+export function ListingCard({ listing } : { listing: ListingDetailedType }){
 	return(
 		<Link href={`/marketplace/${listing.slug}`} >
 			<Card className="h-full relative w-full pt-0">

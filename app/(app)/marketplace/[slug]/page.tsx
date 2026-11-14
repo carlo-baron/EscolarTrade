@@ -8,6 +8,7 @@ interface ListingDetailProps{
 }
 
 import type { Listing } from "@/types/market.types"
+import { getListing } from "@/hooks/marketplace/listings.hook";
 
 const listItem: Listing = {
 	id: "principles-anatomy-physiology",
@@ -48,17 +49,24 @@ const crumbs = {
 
 export default async function ListingDetailsPage({ params } : ListingDetailProps){
 	const { slug } = await params;
+	const listing = await getListing(slug);
+
+	if(!listing){
+		return (
+			<h1>Listing Not Found!</h1>
+		);
+	}
 
 	return(
 		<main className="p-8 pt-4">
 			<Breadcrumbs breadcrumbs={crumbs}/>
 			<section className="mb-8 mt-4 product-details lg:flex-row flex flex-col gap-4">
 				<ListingImages 
-					listing={listItem}
+					listing={listing}
 				/>
-				<ListingDetailCard listing={listItem} />
+				<ListingDetailCard listing={listing} />
 			</section>
-			<SimilarItemByCategory category={listItem.category}/>
+			<SimilarItemByCategory listing={listing}/>
 		</main>
 	);
 }

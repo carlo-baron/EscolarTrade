@@ -104,4 +104,4 @@ export const ListingWithSellerDetails = ListingSchema.extend({
 	})
 });
 
-export type ListingDetailed = z.infer<typeof ListingWithSellerDetails>;
+export type ListingDetailedType = z.infer<typeof ListingWithSellerDetails>;
