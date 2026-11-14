@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { MapPin, Heart } from "lucide-react"
+import { MapPin } from "lucide-react"
 import {
   Card,
   CardDescription,
@@ -10,22 +10,25 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { ListingDetailedType } from "@/schemas/listing.schema"
+import { LikeButton } from "./LikeButton"
+import { useState } from "react"
 
 export function ListingCard({ listing } : { listing: ListingDetailedType }){
+	const [isLiked, setIsLiked] = useState<boolean>(false);
+
 	return(
 		<Link href={`/marketplace/${listing.slug}`} >
 			<Card className="h-full relative w-full pt-0">
 				<div className='relative'>
-					<Button
-						variant="secondary"
-						className="absolute top-2 right-2 z-21"
-					><Heart /></Button>
+
+					<LikeButton like={isLiked} onClick={(state) => setIsLiked(state)} />
+
 					<Badge
 						variant="secondary"
 						className="absolute bottom-2 left-2 z-21"
 					>{listing.condition}</Badge>
+					{/* TODO: remove null detection after implementing recommended listings	 */}
 					<img
 						src={listing.images?.[0] ?? ""}
 						alt={listing.title}

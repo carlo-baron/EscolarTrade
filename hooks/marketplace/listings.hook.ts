@@ -2,7 +2,7 @@ import "server-only";
 
 import { adminDb } from "@/lib/firebase-admin";
 import { requireSession } from "@/lib/auth/session";
-import { ListingDetailedType, ListingSchema, ListingType, ListingWithSellerDetails } from "@/schemas/listing.schema";
+import { ListingDetailedType, ListingSchema, ListingWithSellerDetails } from "@/schemas/listing.schema";
 
 type PublicSeller = {
   displayName: string;
