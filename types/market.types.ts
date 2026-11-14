@@ -55,7 +55,7 @@ export type Listing = {
 	condition: Condition;
 	status: ListingStatus;
 	description: string;
-	image: string[];
+	images: string[];
 	seller: {
 		name: string;
 		program: string;

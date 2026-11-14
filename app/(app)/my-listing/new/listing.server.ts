@@ -42,7 +42,7 @@ export async function createListing(payload: CreateListingInput){
 			moderationStatus: "visible",
 			moderationVersion: 0,
 			moderationReason: "",
-			createAt: timestamp,
+			createdAt: timestamp,
 			updatedAt: timestamp,
 			publishedAt: timestamp
 		};

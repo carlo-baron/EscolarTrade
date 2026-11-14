@@ -1,12 +1,12 @@
 import type { Metadata } from "next"
-
 import Link from "next/link"
 import { ArrowRight, CirclePlus } from "lucide-react"
 import { MarketplaceBrowser } from "@/components/Marketplace/MarketplaceBrowser"
 import { ListingCard } from "@/components/Marketplace/ListingCard"
-import { MARKETPLACE_LISTINGS, RECOMMENDED_LISTINGS } from "@/data/sample-listings"
+// import { MARKETPLACE_LISTINGS, RECOMMENDED_LISTINGS } from "@/data/sample-listings"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { getListings } from "@/hooks/marketplace/listings.hook"
 
 export const metadata: Metadata = {
 	title: "Marketplace | EscolarTrade",
@@ -14,10 +14,12 @@ export const metadata: Metadata = {
 	"Browse sample textbooks, uniforms, supplies, and more from the CEU Malolos campus community.",
 }
 
-export default function MarketplacePage() {
+export default async function MarketplacePage() {
+	const listings = await getListings();
+
 	return (
 		<main>
-			<MarketplaceBrowser listings={MARKETPLACE_LISTINGS} />
+			<MarketplaceBrowser listings={listings} />
 			<section
 				className="bg-muted/60 py-8"
 				aria-labelledby="recommendations-heading"
@@ -50,7 +52,7 @@ export default function MarketplacePage() {
 						id="nursing-listings"
 						className="justify-items-center grid grid-cols-1 md:grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-4"
 					>
-						{RECOMMENDED_LISTINGS.map((listing) => (
+						{listings.map((listing) => (
 							<ListingCard
 								key={listing.id}
 								listing={listing}

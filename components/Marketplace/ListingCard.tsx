@@ -11,16 +11,11 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Listing } from "@/types/market.types"
-import slugify from "slugify";
+import { ListingDetailedType } from "@/schemas/listing.schema"
 
-export function ListingCard({ listing } : { listing: Listing }){
-	// TODO: link to listing page
-	// TODO: actual slug from the db
-	const slug = slugify(listing.title, { lower: true, trim: true }) + "-" + listing.id;
-	
+export function ListingCard({ listing } : { listing: ListingDetailedType }){
 	return(
-		<Link href={`/marketplace/${slug}`} >
+		<Link href={`/marketplace/${listing.slug}`} >
 			<Card className="h-full relative w-full pt-0">
 				<div className='relative'>
 					<Button
@@ -32,7 +27,7 @@ export function ListingCard({ listing } : { listing: Listing }){
 						className="absolute bottom-2 left-2 z-21"
 					>{listing.condition}</Badge>
 					<img
-						src={listing.image[0]}
+						src={listing.images?.[0] ?? ""}
 						alt={listing.title}
 						className="relative z-20 aspect-video w-full object-cover"
 					/>
@@ -40,7 +35,7 @@ export function ListingCard({ listing } : { listing: Listing }){
 				<CardHeader>
 					<div className="flex justify-between">
 						<p className="text-xs text-muted-foreground">{listing.category}</p>
-						<p className="font-semibold">₱{listing.price}</p>
+						<p className="font-semibold">₱{listing.priceCentavos / 100}</p>
 					</div>
 					<CardTitle className="line-clamp-2">{listing.title}</CardTitle>
 					<CardDescription className="truncate">
@@ -50,7 +45,7 @@ export function ListingCard({ listing } : { listing: Listing }){
 				<CardFooter className="flex-1">
 					<div className="text-xs flex justify-between w-full gap-2">
 						<div className="flex items-center gap-1">
-							<p className="text-sm font-medium truncate">{listing.seller.name}</p>
+							<p className="text-sm font-medium truncate">{listing.seller.displayName}</p>
 							<p className="text-muted-foreground">
 								• {listing.seller.program}
 							</p>
@@ -59,7 +54,7 @@ export function ListingCard({ listing } : { listing: Listing }){
 						<div className="flex items-center min-w-0 flex-1 justify-end text-muted-foreground">
 							<MapPin size={16} className="shrink-0" />
 							<p className="truncate">
-								{listing.location[0]}
+								{listing.meetupLocations?.[0] ?? ""}
 							</p>
 						</div>
 					</div>
