@@ -9,20 +9,6 @@ interface ListingDetailProps{
 
 import { getListing } from "@/hooks/marketplace/listings.hook";
 
-const crumbs = {
-	links: [
-		{
-			label: "Marketplace",
-			link: "/marketplace"
-		},
-		{
-			label: "Textbooks & Reviewers",
-			link: `/marketplace?category=${encodeURIComponent("Textbooks & Reviewers")}`
-		}
-	],
-	page: "Principles of Anatomy and Physiology"
-};
-
 export default async function ListingDetailsPage({ params } : ListingDetailProps){
 	const { slug } = await params;
 	const listing = await getListing(slug);
@@ -32,6 +18,20 @@ export default async function ListingDetailsPage({ params } : ListingDetailProps
 			<h1>Listing Not Found!</h1>
 		);
 	}
+
+	const crumbs = {
+		links: [
+			{
+				label: "Marketplace",
+				link: "/marketplace"
+			},
+			{
+				label: listing.category,
+				link: `/marketplace?category=${encodeURIComponent(listing.category)}`
+			}
+		],
+		page: listing.title
+	};
 
 	return(
 		<main className="p-8 pt-4">

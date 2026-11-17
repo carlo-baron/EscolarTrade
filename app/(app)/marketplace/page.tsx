@@ -6,6 +6,7 @@ import { ListingCard } from "@/components/Marketplace/ListingCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getListings } from "@/hooks/marketplace/listings.hook"
+import { Breadcrumbs } from "@/components/Marketplace/Breadcrumbs"
 
 export const metadata: Metadata = {
 	title: "Marketplace | EscolarTrade",
@@ -13,11 +14,43 @@ export const metadata: Metadata = {
 	"Browse sample textbooks, uniforms, supplies, and more from the CEU Malolos campus community.",
 }
 
-export default async function MarketplacePage() {
-	const listings = await getListings();
+const first = (value?: string | string[]) =>
+  Array.isArray(value) ? value[0] : value;
+
+export default async function MarketplacePage({
+	searchParams
+}: {
+	searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+	const params = await searchParams;
+	const filters = {
+		search: first(params.search) ?? "",
+		category: first(params.category) ?? "",
+		zone: first(params.zone) ?? "",
+		condition: first(params.condition) ?? "",
+		min: first(params.min) ?? undefined,
+		max: first(params.max) ?? undefined,
+	};
+	const listings = await getListings(filters);
+	const crumbs = {
+		links: [
+			{
+				label: "Marketplace",
+				link: "/marketplace"
+			}
+		],
+		page: `Search results for "${filters.search}"`
+	};
 
 	return (
 		<main>
+			{filters.search && (
+				<div 
+					className="mx-auto max-w-7xl px-4 pt-4 lg:px-8"
+				>
+					<Breadcrumbs breadcrumbs={crumbs} />
+				</div>
+			)}
 			<MarketplaceBrowser listings={listings} />
 			<section
 				className="bg-muted/60 py-8"

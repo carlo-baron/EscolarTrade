@@ -1,6 +1,10 @@
 "use client"
 
 import Link from "next/link"
+import { useState, type SubmitEvent } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { LayoutGrid, List, ShoppingBasket, Plus } from "lucide-react"
+
 import {
   Empty,
   EmptyContent,
@@ -9,8 +13,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
-import { useState } from "react"
-import { LayoutGrid, List, ShoppingBasket } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,7 +24,6 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
-  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
@@ -30,7 +31,7 @@ import { ItemGroup } from "@/components/ui/item"
 import { ListingCard } from "./ListingCard"
 import { ListingItem } from "./ListingItem"
 import { conditions, locations } from "@/types/market.types"
-import { ListingDetailedType } from "@/schemas/listing.schema"
+import type { ListingDetailedType } from "@/schemas/listing.schema"
 
 type MarketplaceBrowserProps = {
   listings: ListingDetailedType[]
@@ -40,6 +41,62 @@ export function MarketplaceBrowser({
   listings,
 }: MarketplaceBrowserProps) {
   const [layout, setLayout] = useState<"grid" | "list">("grid")
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const zone = searchParams.get("zone") ?? ""
+  const condition = searchParams.get("condition") ?? ""
+  const min = searchParams.get("min") ?? ""
+  const max = searchParams.get("max") ?? ""
+
+  function createMarketplaceUrl(
+    updates: Record<string, string | null>
+  ) {
+    const params = new URLSearchParams(searchParams.toString())
+
+    Object.entries(updates).forEach(([key, value]) => {
+      const normalizedValue = value?.trim()
+
+      if (normalizedValue) {
+        params.set(key, normalizedValue)
+      } else {
+        params.delete(key)
+      }
+    })
+
+    params.delete("page")
+
+    const query = params.toString()
+    return query ? `/marketplace?${query}` : "/marketplace"
+  }
+
+  function handleApplyFilters(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const formData = new FormData(event.currentTarget)
+
+    router.push(
+      createMarketplaceUrl({
+        zone: formData.get("zone")?.toString() || null,
+        condition: formData.get("condition")?.toString() || null,
+        min: formData.get("min")?.toString() || null,
+        max: formData.get("max")?.toString() || null,
+      }),
+      { scroll: false }
+    )
+  }
+
+  function handleClearFilters() {
+    router.push(
+      createMarketplaceUrl({
+        zone: null,
+        condition: null,
+        min: null,
+        max: null,
+      }),
+      { scroll: false }
+    )
+  }
 
   return (
     <section
@@ -47,8 +104,7 @@ export function MarketplaceBrowser({
       className="mx-auto max-w-7xl px-4 py-6 lg:px-8"
     >
       <form
-        action="/marketplace"
-        method="GET"
+        onSubmit={handleApplyFilters}
         className="grid gap-4 rounded-xl bg-muted p-4 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:p-5"
       >
         <Field>
@@ -60,8 +116,10 @@ export function MarketplaceBrowser({
           </FieldLabel>
 
           <NativeSelect
+            key={`zone-${zone}`}
             id="campus-zone"
             name="zone"
+            defaultValue={zone}
             className="w-full"
           >
             <NativeSelectOption value="">
@@ -69,10 +127,7 @@ export function MarketplaceBrowser({
             </NativeSelectOption>
 
             {locations.map((location) => (
-              <NativeSelectOption
-                key={location}
-                value={location}
-              >
+              <NativeSelectOption key={location} value={location}>
                 {location}
               </NativeSelectOption>
             ))}
@@ -88,8 +143,10 @@ export function MarketplaceBrowser({
           </FieldLabel>
 
           <NativeSelect
+            key={`condition-${condition}`}
             id="condition"
             name="condition"
+            defaultValue={condition}
             className="w-full"
           >
             <NativeSelectOption value="">
@@ -97,10 +154,7 @@ export function MarketplaceBrowser({
             </NativeSelectOption>
 
             {conditions.map((item) => (
-              <NativeSelectOption
-                key={item}
-                value={item}
-              >
+              <NativeSelectOption key={item} value={item}>
                 {item}
               </NativeSelectOption>
             ))}
@@ -117,22 +171,26 @@ export function MarketplaceBrowser({
 
           <div className="flex items-center gap-2">
             <Input
+              key={`min-${min}`}
               id="minimum-price"
               name="min"
               aria-label="Minimum price in pesos"
               type="number"
               min="0"
               placeholder="₱0"
+              defaultValue={min}
             />
 
             <span className="text-muted-foreground">–</span>
 
             <Input
+              key={`max-${max}`}
               name="max"
               aria-label="Maximum price in pesos"
               type="number"
               min="0"
               placeholder="₱3,000"
+              defaultValue={max}
             />
           </div>
         </Field>
@@ -142,7 +200,11 @@ export function MarketplaceBrowser({
             Apply Filters
           </Button>
 
-          <Button type="reset" variant="ghost">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={handleClearFilters}
+          >
             Clear
           </Button>
         </div>
@@ -167,11 +229,7 @@ export function MarketplaceBrowser({
             Sort:
           </label>
 
-          <NativeSelect
-            id="listing-sort"
-            name="sort"
-            defaultValue="recent"
-          >
+          <NativeSelect id="listing-sort" name="sort" defaultValue="recent">
             <NativeSelectOption value="recent">
               Most Recent
             </NativeSelectOption>
@@ -185,6 +243,7 @@ export function MarketplaceBrowser({
 
           <div className="flex gap-1 rounded-lg bg-muted p-1">
             <Button
+              type="button"
               variant={layout === "grid" ? "secondary" : "ghost"}
               size="icon-sm"
               aria-label="Grid view"
@@ -195,6 +254,7 @@ export function MarketplaceBrowser({
             </Button>
 
             <Button
+              type="button"
               variant={layout === "list" ? "secondary" : "ghost"}
               size="icon-sm"
               aria-label="List view"
@@ -207,55 +267,44 @@ export function MarketplaceBrowser({
         </div>
       </div>
 
-      {layout === "grid" ? (
+      {listings.length === 0 ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <ShoppingBasket />
+            </EmptyMedia>
+            <EmptyTitle>No Listings Found.</EmptyTitle>
+            <EmptyDescription>
+              No listings match your search and filters.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Link href="/my-listing/new">
+              <Button><Plus /> Post a Listing</Button>
+            </Link>
+          </EmptyContent>
+        </Empty>
+      ) : layout === "grid" ? (
         <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-            />
+            <ListingCard key={listing.id} listing={listing} />
           ))}
         </div>
       ) : (
         <ItemGroup>
           {listings.map((listing) => (
-            <ListingItem
-              key={listing.id}
-              listing={listing}
-            />
+            <ListingItem key={listing.id} listing={listing} />
           ))}
         </ItemGroup>
       )}
 
-			{listings.length === 0 && (
-				<Empty>
-					<EmptyHeader>
-						<EmptyMedia variant="icon">
-							<ShoppingBasket />
-						</EmptyMedia>
-						<EmptyTitle>No Listings Found.</EmptyTitle>
-						<EmptyDescription>No listings match your search and filters.</EmptyDescription>
-					</EmptyHeader>
-					<EmptyContent>
-						<Link href="/my-listing/new">
-							<Button>Post a Listing</Button>
-						</Link>
-					</EmptyContent>
-				</Empty>)}
-
       <div className="flex flex-wrap items-center justify-between gap-4 pt-10 pb-2">
-        <p
-          className="text-xs text-muted-foreground"
-          aria-live="polite"
-        >
+        <p className="text-xs text-muted-foreground" aria-live="polite">
           Showing {listings.length ? "1–" : ""}
           {listings.length} of {listings.length} listings
         </p>
 
-        <Pagination
-          aria-label="Listing pages"
-          className="mx-0 w-auto"
-        >
+        <Pagination aria-label="Listing pages" className="mx-0 w-auto">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
@@ -265,9 +314,9 @@ export function MarketplaceBrowser({
             </PaginationItem>
 
             <PaginationItem>
-              <PaginationLink isActive>
+              <span className="flex size-9 items-center justify-center">
                 1
-              </PaginationLink>
+              </span>
             </PaginationItem>
 
             <PaginationItem>
