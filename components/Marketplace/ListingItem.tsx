@@ -5,39 +5,34 @@ import { Heart, MapPin } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemMedia,
-  ItemTitle,
+	Item,
+	ItemActions,
+	ItemContent,
+	ItemDescription,
+	ItemMedia,
+	ItemTitle,
 } from "@/components/ui/item"
 import Link from "next/link"
 import { ListingDetailedType } from "@/schemas/listing.schema"
-import { useLikeListing, useUnlikeListing } from "@/hooks/marketplace/like.hook"
+import { likeListing } from "@/app/(app)/marketplace/like.server"
 import { toast } from "sonner"
 
 export function ListingItem({ listing }: { listing: ListingDetailedType }) {
 	const [isLiked, setIsLiked]	= useState(listing.isLiked);
-	const likeListing = useLikeListing();
-	const unlikeListing = useUnlikeListing();
 
 	async function handleLikeListing(state: boolean){
 		setIsLiked(state);
 
 		try{
-			if(state){
-				await likeListing(listing.id);
-			}else{
-				await unlikeListing(listing.id);
-			}
+			const like = await likeListing(listing.id);
+			setIsLiked(like.isLiked);
 		}catch {
 			toast.error("Could not like this listing. Please try again.")
 			setIsLiked(!state);
 		}
 	}
 
-  return (
+	return (
 		<Link href={`/marketplace/${listing.slug}`} >
 			<Item
 				variant="outline"

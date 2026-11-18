@@ -85,7 +85,7 @@ export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
   return (
     <header className="w-full border-b">
       <div className="flex w-full flex-wrap items-center gap-4 px-4 py-4 lg:flex-nowrap lg:px-8">
-        <Logo />
+        <Logo link="/marketplace"/>
 
         <form
           onSubmit={handleSearch}
