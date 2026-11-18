@@ -4,7 +4,6 @@ import Link from "next/link"
 import { SubmitEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
-  Bell,
   ChevronDown,
   Heart,
   MessageSquare,
@@ -42,8 +41,7 @@ type MarketplaceHeaderProps = {
 
 const HEADER_ACTIONS = [
   { icon: MessageSquare, label: "Messages", href: "/messages" },
-  { icon: Bell, label: "Notifications" },
-  { icon: Heart, label: "Saved listings" },
+  { icon: Heart, label: "Saved listings", href: "/likes" },
 ]
 
 export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
@@ -135,6 +133,11 @@ export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
 						<DropdownMenuGroup>
 							<DropdownMenuLabel>My Account</DropdownMenuLabel>
 							<DropdownMenuItem>Profile</DropdownMenuItem>
+							<Link href="/my-listing">
+								<DropdownMenuItem>
+									Listings
+								</DropdownMenuItem>
+							</Link>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem render={<LogoutButton />} />

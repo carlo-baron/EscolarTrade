@@ -63,7 +63,7 @@ export function ListingCard({ listing } : { listing: ListingDetailedType }){
 						<p className="text-xs text-muted-foreground">{listing.category}</p>
 						<p className="font-semibold">₱{listing.priceCentavos / 100}</p>
 					</div>
-					<CardTitle className="line-clamp-2">{listing.title}</CardTitle>
+					<CardTitle className="line-clamp-1">{listing.title}</CardTitle>
 					<CardDescription className="truncate">
 						{listing.description}
 					</CardDescription>

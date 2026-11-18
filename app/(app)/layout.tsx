@@ -26,7 +26,7 @@ const FOOTER_LINKS: FooterLinkType[] = [
   {
     title: "Support",
     links: [
-      { label: "Help & FAQs", href: "#" },
+      { label: "Help & FAQs", href: "help" },
       { label: "Moderation Team", href: "#" },
       { label: "Terms of Service", href: "#" },
     ],
