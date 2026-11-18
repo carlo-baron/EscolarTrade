@@ -86,6 +86,8 @@ export const ListingSchema = z.object({
   publishedAt: z.date(),
   updatedAt: z.date(),
   soldAt: z.date().nullable(),
+
+	likeCount: z.number().optional()
 });
 
 export type ListingType = z.infer<typeof ListingSchema>;
