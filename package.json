@@ -1,5 +1,5 @@
 {
-  "name": "EscolarTrade",
+  "name": "escolartrade",
   "version": "0.0.4",
   "type": "module",
   "private": true,
@@ -25,7 +25,7 @@
     "cn": "^0.4.0",
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
-    "firebase": "^13.1.0",
+    "firebase": "^13.4.0",
     "firebase-admin": "^14.5.0",
     "input-otp": "^1.5.0",
     "lucide-react": "^1.53.0",
@@ -55,5 +55,23 @@
     "shadcn": "^4.21.4",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "description": "This is a Next.js template with shadcn/ui.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carlo-baron/EscolarTrade.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/carlo-baron/EscolarTrade/issues"
+  },
+  "homepage": "https://github.com/carlo-baron/EscolarTrade#readme"
 }
