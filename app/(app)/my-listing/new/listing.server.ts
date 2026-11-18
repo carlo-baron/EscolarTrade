@@ -39,6 +39,11 @@ export async function createListing(payload: CreateListingInput){
 			previousPriceCentavos: null,
 			priceChangedAt: null,
 			soldAt: null,
+			likeCount: 0,
+			seller: {
+				displayName: exists.displayName,
+				program: exists.program
+			},
 			moderationStatus: "visible",
 			moderationVersion: 0,
 			moderationReason: "",
