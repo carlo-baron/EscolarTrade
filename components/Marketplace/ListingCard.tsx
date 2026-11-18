@@ -13,23 +13,18 @@ import { Badge } from "@/components/ui/badge"
 import { ListingDetailedType } from "@/schemas/listing.schema"
 import { LikeButton } from "./LikeButton"
 import { useState } from "react"
-import { useLikeListing, useUnlikeListing } from "@/hooks/marketplace/like.hook"
 import { toast } from "sonner"
+import { likeListing } from "@/app/(app)/marketplace/like.server"
 
 export function ListingCard({ listing } : { listing: ListingDetailedType }){
 	const [isLiked, setIsLiked] = useState<boolean>(listing.isLiked);
-	const likeListing = useLikeListing();
-	const unlikeListing = useUnlikeListing();
 
 	async function handleLikeListing(state: boolean){
 		setIsLiked(state);
 
 		try{
-			if(state){
-				await likeListing(listing.id);
-			}else{
-				await unlikeListing(listing.id);
-			}
+			const like = await likeListing(listing.id);
+			setIsLiked(like.isLiked);
 		}catch {
 			toast.error("Could not like this listing. Please try again.")
 			setIsLiked(!state);
