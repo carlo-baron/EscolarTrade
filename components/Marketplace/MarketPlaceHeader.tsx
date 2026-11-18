@@ -7,8 +7,10 @@ import {
   ChevronDown,
   Heart,
   MessageSquare,
+  Moon,
   Plus,
   Search,
+  Sun,
 } from "lucide-react"
 
 import { Logo } from "@/components/Logo"
@@ -29,7 +31,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+	DropdownMenuShortcut
 } from "@/components/ui/dropdown-menu"
+import { useTheme } from "next-themes"
 
 type MarketplaceHeaderProps = {
   user: {
@@ -45,6 +49,7 @@ const HEADER_ACTIONS = [
 ]
 
 export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
+  const { resolvedTheme, setTheme } = useTheme();
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -132,62 +137,79 @@ export function MarketplaceHeader({ user }: MarketplaceHeaderProps) {
 					<DropdownMenuContent>
 						<DropdownMenuGroup>
 							<DropdownMenuLabel>My Account</DropdownMenuLabel>
-							<DropdownMenuItem>Profile</DropdownMenuItem>
+							<Link href="/profile">
+								<DropdownMenuItem>Profile</DropdownMenuItem>
+							</Link>
 							<Link href="/my-listing">
 								<DropdownMenuItem>
 									Listings
 								</DropdownMenuItem>
 							</Link>
+							<DropdownMenuItem
+								onClick={() => {
+									setTheme(resolvedTheme === "dark" ? "light" : "dark");
+								}}
+							>
+								Theme
+								<DropdownMenuShortcut>
+									{
+										resolvedTheme === "dark" ? 
+										( <Sun /> )
+										:
+										( <Moon /> )
+									}
+								</DropdownMenuShortcut>
+							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem render={<LogoutButton />} />
 					</DropdownMenuContent>
 				</DropdownMenu>
 
-      </div>
+			</div>
 
-      <div className="bg-muted/50">
-        <nav
-          aria-label="Listing categories"
-          className="mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 lg:px-8"
-        >
-          <Link
-            href={createMarketplaceUrl({
-              category: null,
-            })}
-            className={cn(
-              "shrink-0 border-b-2 border-transparent py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
-              !activeCategory && "border-primary text-foreground"
-            )}
-          >
-            All Listings
-          </Link>
+			<div className="bg-muted/50">
+				<nav
+					aria-label="Listing categories"
+					className="mx-auto flex max-w-7xl items-center gap-5 overflow-x-auto px-4 lg:px-8"
+				>
+					<Link
+						href={createMarketplaceUrl({
+							category: null,
+						})}
+						className={cn(
+							"shrink-0 border-b-2 border-transparent py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
+							!activeCategory && "border-primary text-foreground"
+						)}
+					>
+						All Listings
+					</Link>
 
-          {categories.map((item) => (
-            <Link
-              key={item}
-              href={createMarketplaceUrl({
-                category: item,
-              })}
-              className={cn(
-                "shrink-0 border-b-2 border-transparent py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
-                activeCategory === item && "border-primary text-foreground"
-              )}
-            >
-              {item}
-            </Link>
-          ))}
+					{categories.map((item) => (
+						<Link
+							key={item}
+							href={createMarketplaceUrl({
+								category: item,
+							})}
+							className={cn(
+								"shrink-0 border-b-2 border-transparent py-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
+								activeCategory === item && "border-primary text-foreground"
+							)}
+						>
+							{item}
+						</Link>
+					))}
 
-          <Button
-            variant="ghost"
-            className="my-2 ml-auto shrink-0"
-            onClick={() => router.push("/my-listing/new")}
-          >
-            <Plus />
-            Post a Listing
-          </Button>
-        </nav>
-      </div>
-    </header>
-  )
+					<Button
+						variant="ghost"
+						className="my-2 ml-auto shrink-0"
+						onClick={() => router.push("/my-listing/new")}
+					>
+						<Plus />
+						Post a Listing
+					</Button>
+				</nav>
+			</div>
+		</header>
+	)
 }
