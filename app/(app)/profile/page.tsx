@@ -66,14 +66,14 @@ const initials = (full: string) =>
 const card = "rounded-lg border border-border bg-card p-4 sm:p-6";
 
 export default function ProfilePage() {
-  const router = useRouter();
+const router = useRouter();
 
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saved, setSaved] = useState<ProfileForm | null>(null); // last saved version
-  const [form, setForm] = useState<ProfileForm | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState<{ type: "ok" | "error"; text: string } | null>(null);
+const [user, setUser] = useState<User | null>(null);
+const [loading, setLoading] = useState(true);
+const [saved, setSaved] = useState<ProfileForm | null>(null); // last saved version
+const [form, setForm] = useState<ProfileForm | null>(null);
+const [saving, setSaving] = useState(false);
+const [status, setStatus] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
   
   useEffect(() => {
@@ -156,12 +156,12 @@ export default function ProfilePage() {
   // Loading / redirecting state
   if (loading || !user || !form || !saved) {
     return (
-      <main className="mx-auto w-full max-w-2xl space-y-5 px-4 py-6 sm:py-10" aria-busy="true">
-        <div className="h-16 animate-pulse rounded-lg bg-muted" />
-        <div className="h-28 animate-pulse rounded-lg bg-muted" />
-        <div className="h-80 animate-pulse rounded-lg bg-muted" />
-        <div className="h-64 animate-pulse rounded-lg bg-muted" />
-      </main>
+    <main className="mx-auto w-full max-w-2xl space-y-5 px-4 py-6 sm:py-10" aria-busy="true">
+      <div className="h-16 animate-pulse rounded-lg bg-muted" />
+      <div className="h-28 animate-pulse rounded-lg bg-muted" />
+      <div className="h-80 animate-pulse rounded-lg bg-muted" />
+      <div className="h-64 animate-pulse rounded-lg bg-muted" />
+    </main>
     );
   }
 
