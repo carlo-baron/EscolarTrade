@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, LayoutGrid, List } from "lucide-react"
 import {
 	InputGroup,
@@ -25,130 +25,25 @@ import {
 	EmptyTitle,
 } from "@/components/ui/empty"
 import type { ListingDetailedType } from "@/schemas/listing.schema"
+import { useGetLikedListings } from "@/hooks/marketplace/likes.hook"
 
-const INITIAL_LIKED_ITEMS: ListingDetailedType[] = [
-	{
-		id: "1",
-		slug: "brunner-suddarths-textbook-of-medical-surgical-nursing-14th-ed",
-		title: "Brunner & Suddarth's Textbook of Medical-Surgical Nursing (14th Ed)",
-		description: "14th Ed Hardbound textbook in great condition, minimal highlights.",
-		priceCentavos: 185000,
-		initialPriceCentavos: 200000,
-		previousPriceCentavos: null,
-		priceChangedAt: null,
-		images: ["https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80"],
-		category: "Textbooks & Reviewers",
-		condition: "Used - Good",
-		isLiked: true,
-		seller: {
-			id: "user-1",
-			displayName: "Sofia L.",
-			avatar: "SL",
-			program: "BS Nursing 4th Yr",
-		},
-		meetupLocations: ["Centennial Bldg"],
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	} as unknown as ListingDetailedType,
-	{
-		id: "2",
-		slug: "casio-fx-991cw-classwiz-scientific-calculator",
-		title: "Casio fx-991CW ClassWiz Scientific Calculator",
-		description: "Includes slide cover and original hard case.",
-		priceCentavos: 115000,
-		initialPriceCentavos: 125000,
-		previousPriceCentavos: null,
-		priceChangedAt: null,
-		images: ["https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?auto=format&fit=crop&w=800&q=80"],
-		category: "Scientific Calculators",
-		condition: "Used - Like New",
-		isLiked: true,
-		seller: {
-			id: "user-2",
-			displayName: "Angelo D.",
-			avatar: "AD",
-			program: "BS Pharmacy 2nd Yr",
-		},
-		meetupLocations: ["Canteen"],
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	} as unknown as ListingDetailedType,
-	{
-		id: "3",
-		slug: "littmann-classic-iii-stethoscope",
-		title: "Littmann Classic III Stethoscope",
-		description: "Special Black Edition stethoscope. Pristine condition.",
-		priceCentavos: 420000,
-		initialPriceCentavos: 450000,
-		previousPriceCentavos: null,
-		priceChangedAt: null,
-		images: ["https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80"],
-		category: "Gadgets & Tech",
-		condition: "Used - Excellent",
-		isLiked: true,
-		seller: {
-			id: "user-3",
-			displayName: "Marielle R.",
-			avatar: "MR",
-			program: "BS MedTech 3rd Yr",
-		},
-		meetupLocations: ["Science Hall"],
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	} as unknown as ListingDetailedType,
-	{
-		id: "4",
-		slug: "ceu-clinical-duty-uniform-set",
-		title: "CEU Clinical Duty Uniform Set",
-		description: "Size Medium, brand new in plastic with CEU patch.",
-		priceCentavos: 55000,
-		initialPriceCentavos: 55000,
-		previousPriceCentavos: null,
-		priceChangedAt: null,
-		images: ["https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80"],
-		category: "Uniforms",
-		condition: "Brand New",
-		isLiked: true,
-		seller: {
-			id: "user-4",
-			displayName: "Camille M.",
-			avatar: "CM",
-			program: "BS Tourism 3rd Yr",
-		},
-		meetupLocations: ["Gate 1"],
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	} as unknown as ListingDetailedType,
-	{
-		id: "5",
-		slug: "pnle-board-exam-comprehensive-reviewer",
-		title: "PNLE Board Exam Comprehensive Reviewer",
-		description: "Complete set with notes and high-yield summaries.",
-		priceCentavos: 65000,
-		initialPriceCentavos: 80000,
-		previousPriceCentavos: null,
-		priceChangedAt: null,
-		images: ["https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80"],
-		category: "Textbooks & Reviewers",
-		condition: "Used - Good",
-		isLiked: true,
-		seller: {
-			id: "user-5",
-			displayName: "Mark D.",
-			avatar: "MD",
-			program: "BS Nursing 3rd Yr",
-		},
-		meetupLocations: ["Student Ctr"],
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	} as unknown as ListingDetailedType,
-];
 
+// TODO for listing card and listing item, have an event to tell if the liked button happened (only for optimistic rendering)
 export default function LikesPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+	const [items, setItems] = useState<ListingDetailedType[]>([]);
+	const likedListings = useGetLikedListings();
 
-	const items = INITIAL_LIKED_ITEMS
+	useEffect(() => {
+		async function getLiked(){
+			const likedListingsData = await likedListings();
+			setItems(likedListingsData);
+		}
+
+		getLiked();
+	}, [likedListings]);
+
 	const normalizedSearch = searchQuery.trim().toLowerCase()
 
 	const filteredItems = items.filter(

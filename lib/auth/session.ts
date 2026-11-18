@@ -22,7 +22,13 @@ export async function requireSession() {
 
 export async function requireProfile(uid: string){
 	try{
-		return await adminDb.collection("users").doc(uid).get();
+		const doc = await adminDb.collection("users").doc(uid).get();
+
+		if (!doc.exists) {
+			throw new Error("User profile not found");
+		}
+
+		return doc.data();	
 	}catch(error){
 		throw error;
 	}
