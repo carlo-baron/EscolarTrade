@@ -1,10 +1,11 @@
 import "server-only";
 
-import type { QueryDocumentSnapshot } from "firebase-admin/firestore";
+import { FieldPath, type QueryDocumentSnapshot } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase-admin";
 import { requireSession } from "@/lib/auth/session";
 import {
   ListingSchema,
+  ListingType,
   ListingWithLikeStateSchema,
   type ListingDetailedType,
 } from "@/schemas/listing.schema";
@@ -17,11 +18,6 @@ interface ListingFilter {
   min?: string;
   max?: string;
 }
-
-type PublicSeller = {
-  displayName: string;
-  program?: string;
-};
 
 const PAGE_SIZE = 8;
 const SCAN_SIZE = 50;
@@ -49,7 +45,6 @@ function parseListing(doc: QueryDocumentSnapshot) {
   });
 }
 
-//TODO: study how this works
 export async function getListings(
   filter: ListingFilter
 ): Promise<ListingDetailedType[]> {
@@ -98,9 +93,7 @@ export async function getListings(
   let lastDoc: QueryDocumentSnapshot | undefined;
 
   while (listings.length < PAGE_SIZE) {
-    let batchQuery = query
-      .orderBy("createdAt", "desc")
-      .limit(SCAN_SIZE);
+    let batchQuery = query.orderBy("createdAt", "desc").limit(SCAN_SIZE);
 
     if (lastDoc) {
       batchQuery = batchQuery.startAfter(lastDoc);
@@ -113,10 +106,7 @@ export async function getListings(
       lastDoc = doc;
       const data = doc.data();
 
-      if (
-        filter.zone &&
-        !data.meetupLocations?.includes(filter.zone)
-      ) {
+      if (filter.zone && !data.meetupLocations?.includes(filter.zone)) {
         continue;
       }
 
@@ -144,34 +134,15 @@ export async function getListings(
 
   if (listings.length === 0) return [];
 
-  const sellerIds = [...new Set(listings.map((listing) => listing.sellerId))];
-  const sellerRefs = sellerIds.map((id) =>
-    adminDb.collection("users").doc(id)
-  );
   const likeRefs = listings.map((listing) =>
-    adminDb.collection("users").doc(uid).collection("likes").doc(listing.id)
+    adminDb
+      .collection("users")
+      .doc(uid)
+      .collection("likes")
+      .doc(listing.id)
   );
 
-  const [sellerSnapshots, likeSnapshots] = await Promise.all([
-    adminDb.getAll(...sellerRefs),
-    adminDb.getAll(...likeRefs),
-  ]);
-
-  const sellersById = new Map<string, PublicSeller | null>();
-
-  for (const snapshot of sellerSnapshots) {
-    if (!snapshot.exists) {
-      sellersById.set(snapshot.id, null);
-      continue;
-    }
-
-    const data = snapshot.data()!;
-    sellersById.set(snapshot.id, {
-      displayName: data.displayName,
-      program: data.program,
-    });
-  }
-
+  const likeSnapshots = await adminDb.getAll(...likeRefs);
   const likedIds = new Set(
     likeSnapshots
       .filter((snapshot) => snapshot.exists)
@@ -181,13 +152,12 @@ export async function getListings(
   return listings.map((listing) =>
     ListingWithLikeStateSchema.parse({
       ...listing,
-      seller: sellersById.get(listing.sellerId) ?? null,
       isLiked: likedIds.has(listing.id),
     })
   );
 }
 
-export async function getListing(
+export async function getListingBySlug(
   slug: string
 ): Promise<ListingDetailedType | null> {
   const { uid } = await requireSession();
@@ -211,22 +181,43 @@ export async function getListing(
   }
 
   const listing = parseListing(doc);
-
-  const [sellerSnapshot, likeSnapshot] = await Promise.all([
-    adminDb.collection("users").doc(listing.sellerId).get(),
-    adminDb.collection("users").doc(uid).collection("likes").doc(listing.id).get(),
-  ]);
-
-  const sellerData = sellerSnapshot.data();
+  const likeSnapshot = await adminDb
+    .collection("users")
+    .doc(uid)
+    .collection("likes")
+    .doc(listing.id)
+    .get();
 
   return ListingWithLikeStateSchema.parse({
     ...listing,
-    seller: sellerData
-      ? {
-          displayName: sellerData.displayName,
-          program: sellerData.program,
-        }
-      : null,
     isLiked: likeSnapshot.exists,
   });
+}
+
+export async function getListingByIdForEdit(
+  listingId: string
+): Promise<ListingType | null> {
+  await requireSession();
+
+  const listingSnapshot = await adminDb
+    .collection("listings")
+    .where(FieldPath.documentId(), "==", listingId)
+    .limit(1)
+    .get();
+
+  const doc = listingSnapshot.docs[0];
+  if (!doc) return null;
+
+  const data = doc.data();
+
+  if (
+    data.moderationStatus !== "visible" ||
+    !["Available", "Pending"].includes(data.status)
+  ) {
+    return null;
+  }
+
+  const listing = parseListing(doc);
+
+	return listing;
 }

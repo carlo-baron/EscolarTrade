@@ -7,11 +7,11 @@ interface ListingDetailProps{
 	params: Promise<{ slug: string }>
 }
 
-import { getListing } from "@/hooks/marketplace/listings.hook";
+import { getListingBySlug } from "@/hooks/marketplace/listings.hook";
 
 export default async function ListingDetailsPage({ params } : ListingDetailProps){
 	const { slug } = await params;
-	const listing = await getListing(slug);
+	const listing = await getListingBySlug(slug);
 
 	if(!listing){
 		return (

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { Location } from "@/types/market.types"
-import { ListingPhotoImage } from "./ListingPhotoImage"
+import { ListingPhotoImage, type ListingPhoto } from "./ListingPhotoImage"
 
 const currency = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -25,7 +25,7 @@ type ListingPreviewProps = {
   description: string
   price: string
   meetupLocations: readonly Location[]
-  imageFile?: File
+  image?: ListingPhoto
 }
 
 export function ListingPreview({
@@ -35,7 +35,7 @@ export function ListingPreview({
   description,
   price,
   meetupLocations,
-  imageFile,
+  image,
 }: ListingPreviewProps) {
   const numericPrice = Number(price)
 
@@ -54,9 +54,9 @@ export function ListingPreview({
       </div>
       <Card className="gap-4 py-0">
         <div className="relative aspect-video overflow-hidden bg-muted">
-          {imageFile ? (
+          {image ? (
             <ListingPhotoImage
-              file={imageFile}
+              photo={image}
               alt={title.trim() || "Your listing cover photo"}
               className="h-full w-full object-cover"
             />

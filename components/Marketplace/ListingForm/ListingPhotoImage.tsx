@@ -2,26 +2,37 @@
 
 import { useEffect, useRef } from "react"
 
+export type ListingPhoto = File | string
+
 type ListingPhotoImageProps = {
-  file: File
+  photo: ListingPhoto
   alt: string
   className?: string
 }
 
 export function ListingPhotoImage({
-  file,
+  photo,
   alt,
   className,
 }: ListingPhotoImageProps) {
   const image = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
-    const url = URL.createObjectURL(file)
+    if (typeof photo === "string") return
+
+    const url = URL.createObjectURL(photo)
     if (image.current) image.current.src = url
     return () => URL.revokeObjectURL(url)
-  }, [file])
+  }, [photo])
 
-  // Object URLs are local previews, not uploaded URLs or Next.js image sources.
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img ref={image} alt={alt} className={className} />
+  // Files use local object URLs; saved listing photos are already safe remote URLs.
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      ref={image}
+      src={typeof photo === "string" ? photo : undefined}
+      alt={alt}
+      className={className}
+    />
+  )
 }
