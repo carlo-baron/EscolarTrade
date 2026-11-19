@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { useGetUser } from "../zustand/auth.store";
 import { db } from "@/lib/firebase";
@@ -7,9 +8,10 @@ import { ListingSchema, ListingType } from "@/schemas/listing.schema";
 
 export const useGetMyListings = () => {
 	const user = useGetUser();
+	const userId = user?.uid;
 
-	return async (): Promise<ListingType[]> => {
-		if(!user) {
+	return useCallback(async (): Promise<ListingType[]> => {
+		if(!userId) {
 			return [];
 		}
 
@@ -18,9 +20,9 @@ export const useGetMyListings = () => {
 
 		const listingsQuery = query(
 			listingsRef,
-			where("sellerId", "==", user.uid),
+			where("sellerId", "==", userId),
 			where("moderationStatus", "==", "visible"),
-			where("status", "in", ["Available", "Pending"]),
+			where("status", "in", ["Available", "Pending", "Sold", "Out of Stock"]),
 			limit(8)
 		);
 		const listingsSnap = await getDocs(listingsQuery);
@@ -34,6 +36,6 @@ export const useGetMyListings = () => {
 			priceChangedAt: doc.data().priceChangedAt?.toDate() ?? null,
 			soldAt: doc.data().soldAt?.toDate() ?? null,
 		})));
-	}
+	}, [userId])
 }
 
