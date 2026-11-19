@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { ChevronDown, Eye, MapPin, MessageSquare, Pencil, Plus, Search } from "lucide-react"
 
@@ -45,6 +45,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { ListingDetailedType, ListingType } from "@/schemas/listing.schema"
+import { useGetMyListings } from "@/hooks/marketplace/mylistings.hook"
 
 type ListingStatus = "Available" | "Pending" | "Sold" | "Out of Stock"
 type StatusFilter = "All" | ListingStatus
@@ -69,114 +71,6 @@ type Listing = {
   createdAt: string
 }
 
-const initialListings: Listing[] = [
-  {
-    id: "item-1",
-    slug: "principles-of-anatomy-and-physiology-15th-global-edition",
-    title: "Principles of Anatomy and Physiology (15th Global Edition)",
-    category: "Textbooks & Reviewers",
-    priceCentavos: 125000,
-    description: "Hardbound • Complete",
-    condition: "Used - Like New",
-    status: "Available",
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBV3JZQ8B0OundSSQb4eZvRn3PhjcZBrddebY59PvfQeVa9YiirxMHbSglsIepglmLbfguqru96Bk9joqVnAwSLmCIMUu4jTlcjkmD3NAODjIkOZWQTb6Y3HBNt6x3NG1Dxz9dv8wUIcx1viO96ipmZNz-Iw0bwRT0lSsFLjYBqW41tFSh1gOwhTkKVeFfqjvOzVe1dDw8yTacClQbb375v7bpZtHxTUAkdW8yfNoMMXZ9W1bMEBWBn",
-    ],
-    seller: {
-      displayName: "Bea R.",
-      program: "BS Nursing · 3rd Yr",
-      initials: "BR",
-    },
-    meetupLocations: ["Library", "PHL Lobby"],
-    chats: 3,
-    createdAt: "2025-10-15",
-  },
-  {
-    id: "item-2",
-    slug: "ceu-female-duty-scrubs-pink-white-m",
-    title: "CEU Female Duty Scrubs (Pink/White M)",
-    category: "Uniforms",
-    priceCentavos: 48000,
-    description: "Medium • Pink & White",
-    condition: "Used - Excellent",
-    status: "Pending",
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAGUZD7uru0fY_h60eo8cRpqE_An9b8lNXslceWm1BmO6ZLUT1p4muLPqE0P_MF0DvUQd5AOZ2-GUrvF6F3rOobk7-O7NsCroMWk7dyKnUhXZwWFqc7F_-sHyB_B8tl87ZOJ9OU6_Y52NrxaTlKEvUzftkHGyYaBKGD0qNcjrVmtPzzFHJgj-kIf91MjpqDizbVNDTDIihq5Ofr04JG7KMmoI77YjZOAv-Ogm6o398QUMgzurTNpJ_F",
-    ],
-    seller: {
-      displayName: "Bea R.",
-      program: "BS Nursing · 3rd Yr",
-      initials: "BR",
-    },
-    meetupLocations: ["Canteen", "Gate 1"],
-    chats: 1,
-    createdAt: "2025-10-12",
-  },
-  {
-    id: "item-3",
-    slug: "littmann-classic-iii-stethoscope-black",
-    title: "Littmann Classic III Stethoscope (Black)",
-    category: "Gadgets & Tech",
-    priceCentavos: 395000,
-    description: "Special Black Edition",
-    condition: "Used - Excellent",
-    status: "Available",
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAGKK8A4TjmrCd_QMkRmIlDf2ErALxxsmNthWKenNsUcpYEgBQ53EOuaJTh4AbhUqEgN8d64ASnvTSc7eYL5wwbFqvwzXQR_k85xVRtpxTHpQAZyRP9V9GC-eYTpupQm0dE7VRAiiIb-f18YN42j1yCxb2sQR8O4kvHHgUlZIlNvz9-8K4fL74qut3FR5Nl7sSVgkRosHEhDLcV0pHaU-c9pzBNIKfUaU0Tt0IB0YleiXfVZTH5Jq6g",
-    ],
-    seller: {
-      displayName: "Bea R.",
-      program: "BS Nursing · 3rd Yr",
-      initials: "BR",
-    },
-    meetupLocations: ["Gate 3"],
-    chats: 4,
-    createdAt: "2025-10-10",
-  },
-  {
-    id: "item-4",
-    slug: "ceu-embroidered-lab-gown-size-small",
-    title: "CEU Embroidered Lab Gown (Size Small)",
-    category: "Uniforms",
-    priceCentavos: 26000,
-    description: "Size Small • Crisp condition",
-    condition: "Used - Good",
-    status: "Sold",
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCKyFO3A6mNfVSqGg2LLd1Hb7DE4p5rlGl1CSU0tnPFcdOSTrgCSNROwThI-Fp0BpssD7omDsFpUNoXa9-YI8hPJzH8FkXklUtzEMCI4ixbBQlQK9YJEzaKqpRoVjHDtGiQwql81LFCJPQ77mLh3YAcKjgq-jwLmeLHc7PPzoxU984-l6LzNKcLpgmIHKQz0263-6DiY3BDT-yqeOf11-Gn8MV0e_6X27ednhw0HEEZAwtpqZ7E3gqW",
-    ],
-    seller: {
-      displayName: "Bea R.",
-      program: "BS Nursing · 3rd Yr",
-      initials: "BR",
-    },
-    meetupLocations: ["Gate 4"],
-    chats: 0,
-    createdAt: "2025-10-05",
-  },
-  {
-    id: "item-5",
-    slug: "casio-fx-991cw-classwiz-scientific-calculator",
-    title: "Casio fx-991CW ClassWiz Scientific Calculator",
-    category: "Scientific Calculators",
-    priceCentavos: 115000,
-    description: "Includes Slide Cover",
-    condition: "Used - Like New",
-    status: "Sold",
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuA3jOT-gdEB_L9-enlzce1iKTFca0RD5hICFu1gBB8yvVKyph28qfgwbjmskUR75ovYYDZGywewlsZic8uSNgv6qKD4fmcUv1KyyeAJss4DgfDNAb43sXwSxMCPCocsxWWah0oFkZcvKGJavUB1bFgULNEa7Hk415C12_TzPHOjzaeTK-lLNgxyv4LbLm_-vgTm44drsQC-1jRz_rpPWS5Gtn5lsvz7DwkM3uSaNJaH6xWoYdK49NaM",
-    ],
-    seller: {
-      displayName: "Bea R.",
-      program: "BS Nursing · 3rd Yr",
-      initials: "BR",
-    },
-    meetupLocations: ["CEU Square"],
-    chats: 0,
-    createdAt: "2025-10-01",
-  },
-]
-
 const statusFilters: StatusFilter[] = [
   "All",
   "Available",
@@ -193,12 +87,23 @@ function formatPrice(priceCentavos: number) {
 }
 
 export default function MyListingsPage() {
-  const [listings, setListings] = useState(initialListings)
+  const [listings, setListings] = useState<ListingType[]>([]);
   const [activeTab, setActiveTab] = useState<StatusFilter>("All")
   const [search, setSearch] = useState("")
   const [sort, setSort] = useState("newest")
   const [listingToMarkSold, setListingToMarkSold] =
     useState<Listing | null>(null)
+
+	const getMyListings = useGetMyListings();
+
+	useEffect(() => {
+		async function getListings(){
+			const myListings = await getMyListings();
+			setListings(myListings);
+		}
+
+		getListings();
+	}, [getMyListings]);
 
   const filteredListings = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
@@ -217,13 +122,13 @@ export default function MyListingsPage() {
       .sort((a, b) => {
         switch (sort) {
           case "oldest":
-            return a.createdAt.localeCompare(b.createdAt)
+            return a.createdAt.toString().localeCompare(b.createdAt.toString())
           case "price-low":
             return a.priceCentavos - b.priceCentavos
           case "price-high":
             return b.priceCentavos - a.priceCentavos
           default:
-            return b.createdAt.localeCompare(a.createdAt)
+            return b.createdAt.toString().localeCompare(a.createdAt.toString())
         }
       })
   }, [listings, activeTab, search, sort])
@@ -361,21 +266,21 @@ export default function MyListingsPage() {
 									</p>
 								</div>
 
-								<CardTitle className="line-clamp-2 text-base">
+								<CardTitle className="line-clamp-1 text-base">
 									<Link href={`/marketplace/${listing.slug}`}>
 										{listing.title}
 									</Link>
 								</CardTitle>
 
-								<p className="line-clamp-2 text-sm text-muted-foreground">
+								<p className="truncate text-sm text-muted-foreground">
 									{listing.description}
 								</p>
 							</CardHeader>
 
-							<CardContent className="flex-1 px-4 pb-4">
+							<CardContent className="flex-1 px-4">
 								<div className="flex min-w-0 items-start gap-2 border-t pt-3">
 									<Avatar className="size-7 shrink-0">
-										<AvatarFallback>{listing.seller.initials}</AvatarFallback>
+										<AvatarFallback>{listing.seller.displayName[0]}</AvatarFallback>
 									</Avatar>
 
 									<div className="min-w-0">
@@ -387,18 +292,18 @@ export default function MyListingsPage() {
 												{" "}· {listing.seller.program}
 											</span>
 										</p>
-
-										<p className="mt-1 flex items-start gap-1 text-sm text-muted-foreground">
-											<MapPin className="mt-0.5 size-4 shrink-0" />
-											<span className="truncate">
-												{listing.meetupLocations.join(", ")}
-											</span>
-										</p>
 									</div>
 								</div>
+
+									<p className="mt-2 flex items-start gap-1 text-sm text-muted-foreground">
+										<MapPin className="mt-0.5 size-4 shrink-0" />
+										<span className="truncate">
+											{listing.meetupLocations.join(", ")}
+										</span>
+									</p>
 							</CardContent>
 
-							<CardFooter className="mt-auto flex-col items-stretch gap-3 border-t bg-muted/40 p-3">
+							<CardFooter className="flex-col items-stretch gap-3 border-t bg-muted/40 p-3">
 								{listing.status === "Sold" ? (
 									<div className="grid grid-cols-2 gap-2">
 										<Link href={`/marketplace/${listing.slug}`}>
@@ -480,7 +385,15 @@ export default function MyListingsPage() {
 								Try changing your search or selected status.
 							</EmptyDescription>
 						</EmptyHeader>
-						<EmptyContent>
+						<EmptyContent className="flex justify-center flex-row gap-2">
+							<Link href="/my-listing/new">
+								<Button
+									type="button"
+								>
+									<Plus />
+									Create Listing
+								</Button>
+							</Link>
 							<Button
 								type="button"
 								variant="outline"

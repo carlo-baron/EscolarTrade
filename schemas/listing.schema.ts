@@ -1,8 +1,8 @@
 import { z } from "zod";
 import {
-  categories,
-  conditions,
-  locations,
+	categories,
+	conditions,
+	locations,
 	listingStatuses,
 } from "@/types/market.types";
 import { PROGRAMS } from "@/types/school.types";
@@ -58,41 +58,34 @@ typeof CreateListingSchema
 >;
 
 export const ListingSchema = z.object({
-  id: z.string(),
+	id: z.string(),
 
-  images: z.array(z.string().url()).length(3),
-  title: z.string(),
-  description: z.string(),
+	images: z.array(z.string().url()).length(3),
+	title: z.string(),
+	description: z.string(),
 
-  priceCentavos: z.number().int().nonnegative(),
-  initialPriceCentavos: z.number().int().nonnegative(),
-  previousPriceCentavos: z.number().int().nonnegative().nullable(),
-  priceChangedAt: z.date().nullable(),
+	priceCentavos: z.number().int().nonnegative(),
+	initialPriceCentavos: z.number().int().nonnegative(),
+	previousPriceCentavos: z.number().int().nonnegative().nullable(),
+	priceChangedAt: z.date().nullable(),
 
-  category: z.enum(categories),
-  condition: z.enum(conditions),
-  meetupLocations: z.array(z.enum(locations)),
+	category: z.enum(categories),
+	condition: z.enum(conditions),
+	meetupLocations: z.array(z.enum(locations)),
 
-  sellerId: z.string(),
-  slug: z.string(),
-  searchTokens: z.array(z.string()),
+	sellerId: z.string(),
+	slug: z.string(),
+	searchTokens: z.array(z.string()),
 
-  status: z.enum(listingStatuses),
-  moderationStatus: z.enum(["visible", "hidden", "banned"]),
-  moderationReason: z.string(),
-  moderationVersion: z.number().int(),
+	status: z.enum(listingStatuses),
+	moderationStatus: z.enum(["visible", "hidden", "banned"]),
+	moderationReason: z.string(),
+	moderationVersion: z.number().int(),
 
-  createdAt: z.date(),
-  publishedAt: z.date(),
-  updatedAt: z.date(),
-  soldAt: z.date().nullable(),
-
-	likeCount: z.number().optional()
-});
-
-export type ListingType = z.infer<typeof ListingSchema>;
-
-export const ListingWithSellerDetails = ListingSchema.extend({
+	createdAt: z.date(),
+	publishedAt: z.date(),
+	updatedAt: z.date(),
+	soldAt: z.date().nullable(),
 	seller: z.object({
 		displayName: z
 		.string()
@@ -102,16 +95,17 @@ export const ListingWithSellerDetails = ListingSchema.extend({
 
 		program: z
 		.enum(PROGRAMS.map((program) => program.value))
-		.optional(),
-	})
-	.nullable()
+	}),
+	likeCount: z.number().optional()
 });
 
+export type ListingType = z.infer<typeof ListingSchema>;
+
 export const ListingWithLikeStateSchema =
-  ListingWithSellerDetails.extend({
-    isLiked: z.boolean(),
-  });
+ListingSchema.extend({
+	isLiked: z.boolean(),
+});
 
 export type ListingDetailedType = z.infer<
-  typeof ListingWithLikeStateSchema
+typeof ListingWithLikeStateSchema
 >;
