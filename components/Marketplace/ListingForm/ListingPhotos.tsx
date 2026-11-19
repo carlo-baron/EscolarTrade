@@ -16,11 +16,11 @@ import {
   MAX_HEIGHT,
 } from "@/schemas/image-file.schema"
 import { ListingFormSection } from "./ListingFormSection"
-import { ListingPhotoImage } from "./ListingPhotoImage"
+import { ListingPhotoImage, type ListingPhoto } from "./ListingPhotoImage"
 
 type ListingPhotosProps = {
-  photos: File[]
-  onPhotosChange: (photos: File[]) => void
+  photos: ListingPhoto[]
+  onPhotosChange: (photos: ListingPhoto[]) => void
   error: string
   onErrorChange: (error: string) => void
 }
@@ -59,6 +59,10 @@ export function ListingPhotos({
   function removePhoto(index: number) {
     onPhotosChange(photos.filter((_, photoIndex) => photoIndex !== index))
     onErrorChange("")
+  }
+
+  function photoLabel(photo: ListingPhoto, index: number) {
+    return typeof photo === "string" ? `Existing photo ${index + 1}` : photo.name
   }
 
   return (
@@ -119,7 +123,11 @@ export function ListingPhotos({
         <div className="grid grid-cols-3 gap-2.5 min-[600px]:grid-cols-4 min-[600px]:gap-3.5">
           {photos.map((photo, index) => (
             <div
-              key={`${photo.name}-${photo.lastModified}-${index}`}
+              key={
+                typeof photo === "string"
+                  ? photo
+                  : `${photo.name}-${photo.lastModified}-${index}`
+              }
               className="relative aspect-square w-full min-w-0 overflow-hidden rounded-lg border bg-muted"
             >
               <button
@@ -127,8 +135,8 @@ export function ListingPhotos({
                 className="h-full w-full outline-none focus-visible:ring-3 focus-visible:ring-ring focus-visible:ring-inset"
                 aria-label={
                   index === 0
-                    ? `${photo.name}, cover photo`
-                    : `Make ${photo.name} the cover photo`
+                    ? `${photoLabel(photo, index)}, cover photo`
+                    : `Make ${photoLabel(photo, index)} the cover photo`
                 }
                 onClick={() =>
                   onPhotosChange([
@@ -138,8 +146,8 @@ export function ListingPhotos({
                 }
               >
                 <ListingPhotoImage
-                  file={photo}
-                  alt={photo.name}
+                  photo={photo}
+                  alt={photoLabel(photo, index)}
                   className="h-full w-full object-cover"
                 />
               </button>
@@ -153,7 +161,7 @@ export function ListingPhotos({
                 variant="secondary"
                 size="icon-xs"
                 className="absolute top-2 right-2"
-                aria-label={`Remove ${photo.name}`}
+                aria-label={`Remove ${photoLabel(photo, index)}`}
                 onClick={() => removePhoto(index)}
               >
                 <X />

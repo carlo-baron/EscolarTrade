@@ -30,6 +30,8 @@ export async function uploadImage(image: File): Promise<string> {
 }
 
 export async function uploadImages(images: File[]): Promise<string[]> {
+  if (images.length === 0) return []
+
   await requireSession()
   const validatedImages = await ImageSchema.array()
     .min(1)
