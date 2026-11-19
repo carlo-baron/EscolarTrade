@@ -57,6 +57,11 @@ export type CreateListingInput = z.infer<
 typeof CreateListingSchema
 >;
 
+export const UpdateListingSchema = CreateListingSchema;
+
+export type UpdateListingInput = z.input<typeof UpdateListingSchema>;
+export type ValidatedUpdateListingInput = z.output<typeof UpdateListingSchema>;
+
 export const ListingSchema = z.object({
 	id: z.string(),
 

@@ -1,8 +1,11 @@
 import "server-only";
 
-import { FieldPath, type QueryDocumentSnapshot } from "firebase-admin/firestore";
+import {
+  type DocumentSnapshot,
+  type QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase-admin";
-import { requireSession } from "@/lib/auth/session";
+import { requireListingOwner, requireSession } from "@/lib/auth/session";
 import {
   ListingSchema,
   ListingType,
@@ -31,8 +34,9 @@ function parsePesoFilter(value?: string): number | undefined | null {
   return Math.round(pesos * 100);
 }
 
-function parseListing(doc: QueryDocumentSnapshot) {
+function parseListing(doc: QueryDocumentSnapshot | DocumentSnapshot) {
   const data = doc.data();
+  if (!data) throw new Error("Listing not found.");
 
   return ListingSchema.parse({
     id: doc.id,
@@ -197,27 +201,6 @@ export async function getListingBySlug(
 export async function getListingByIdForEdit(
   listingId: string
 ): Promise<ListingType | null> {
-  await requireSession();
-
-  const listingSnapshot = await adminDb
-    .collection("listings")
-    .where(FieldPath.documentId(), "==", listingId)
-    .limit(1)
-    .get();
-
-  const doc = listingSnapshot.docs[0];
-  if (!doc) return null;
-
-  const data = doc.data();
-
-  if (
-    data.moderationStatus !== "visible" ||
-    !["Available", "Pending"].includes(data.status)
-  ) {
-    return null;
-  }
-
-  const listing = parseListing(doc);
-
-	return listing;
+  const { listing } = await requireListingOwner(listingId);
+  return parseListing(listing);
 }

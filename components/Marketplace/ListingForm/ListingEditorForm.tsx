@@ -56,10 +56,12 @@ type ListingEditorFormProps = {
   subtitle: string
   submitLabel: string
   submittingLabel: string
+  formErrorTitle?: string
   cancelHref: string
   values: ListingFormValues
   errors: Record<string, string>
   isSubmitting: boolean
+  isSubmitDisabled?: boolean
   onValueChange: <K extends keyof ListingFormValues>(
     field: K,
     value: ListingFormValues[K]
@@ -73,10 +75,12 @@ export function ListingEditorForm({
   subtitle,
   submitLabel,
   submittingLabel,
+  formErrorTitle = "Listing could not be published",
   cancelHref,
   values,
   errors,
   isSubmitting,
+  isSubmitDisabled = false,
   onValueChange,
   onPhotoErrorChange,
   onSubmit,
@@ -354,7 +358,7 @@ export function ListingEditorForm({
                 tabIndex={-1}
               >
                 <Info />
-                <AlertTitle>Listing could not be published</AlertTitle>
+                <AlertTitle>{formErrorTitle}</AlertTitle>
                 <AlertDescription>{errors["form-error"]}</AlertDescription>
               </Alert>
             )}
@@ -373,7 +377,7 @@ export function ListingEditorForm({
                 type="submit"
                 size="lg"
                 className="min-h-11 px-5"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSubmitDisabled}
               >
                 {isSubmitting ? submittingLabel : submitLabel}
                 <ArrowRight data-icon="inline-end" />
