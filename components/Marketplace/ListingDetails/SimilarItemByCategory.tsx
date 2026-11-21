@@ -1,16 +1,17 @@
-import { Category } from "@/types/market.types";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { MARKETPLACE_LISTINGS } from "@/data/sample-listings";
 import { ListingCard } from "../ListingCard";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel"
-import { ListingType } from "@/schemas/listing.schema";
+import { ListingDetailedType } from "@/schemas/listing.schema";
+import { getRecommendedListings } from "@/lib/marketplace/listings.service";
 
-export function SimilarItemByCategory({ listing } : { listing: ListingType }){
+export async function SimilarItemByCategory({ listing } : { listing: ListingDetailedType }){
+	const recommendedListings = await getRecommendedListings(listing.category);
+
 	return(
 		<section className="similar-listing">
 			<div className="flex flex-col lg:flex-row lg:justify-between lg:items-center">
@@ -22,8 +23,7 @@ export function SimilarItemByCategory({ listing } : { listing: ListingType }){
 			</div>
 			<div className="hidden mt-4 gap-4 sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
 				{
-					MARKETPLACE_LISTINGS
-					.slice(0, 4)
+					recommendedListings.listings
 					.map(item => {
 						return(<ListingCard key={item.id} listing={item}/>)
 					})
@@ -32,8 +32,7 @@ export function SimilarItemByCategory({ listing } : { listing: ListingType }){
 			<Carousel className="mt-4 sm:hidden">
 				<CarouselContent>
 					{
-						MARKETPLACE_LISTINGS
-						.slice(0, 4)
+						recommendedListings.listings
 						.map(item => {
 							return(
 								<CarouselItem key={item.id}>
