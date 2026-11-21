@@ -20,26 +20,28 @@ import {
   NativeSelectOption,
 } from "@/components/ui/native-select"
 import { Field, FieldLabel } from "@/components/ui/field"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
 import { ItemGroup } from "@/components/ui/item"
+import { loadMoreListings } from "@/app/(app)/marketplace/listings.action"
 import { ListingCard } from "./ListingCard"
 import { ListingItem } from "./ListingItem"
 import { conditions, locations } from "@/types/market.types"
 import type { ListingDetailedType } from "@/schemas/listing.schema"
+import type { MarketplaceListingFilter } from "@/lib/marketplace/listings.service"
 
 type MarketplaceBrowserProps = {
   listings: ListingDetailedType[]
+  nextCursor: string | null
+  filters: MarketplaceListingFilter
 }
 
 export function MarketplaceBrowser({
   listings,
+  nextCursor: initialCursor,
+  filters,
 }: MarketplaceBrowserProps) {
+  const [allListings, setAllListings] = useState(listings)
+  const [cursor, setCursor] = useState(initialCursor)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [layout, setLayout] = useState<"grid" | "list">("grid")
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -48,6 +50,18 @@ export function MarketplaceBrowser({
   const condition = searchParams.get("condition") ?? ""
   const min = searchParams.get("min") ?? ""
   const max = searchParams.get("max") ?? ""
+
+  async function handleLoadMore() {
+    if (!cursor || loadingMore) return
+    setLoadingMore(true)
+    try {
+      const result = await loadMoreListings(filters, cursor)
+      setAllListings((current) => [...current, ...result.listings])
+      setCursor(result.nextCursor)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   function createMarketplaceUrl(
     updates: Record<string, string | null>
@@ -267,7 +281,7 @@ export function MarketplaceBrowser({
         </div>
       </div>
 
-      {listings.length === 0 ? (
+      {allListings.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -286,48 +300,25 @@ export function MarketplaceBrowser({
         </Empty>
       ) : layout === "grid" ? (
         <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {listings.map((listing) => (
+          {allListings.map((listing) => (
             <ListingCard key={listing.id} listing={listing} />
           ))}
         </div>
       ) : (
         <ItemGroup>
-          {listings.map((listing) => (
+          {allListings.map((listing) => (
             <ListingItem key={listing.id} listing={listing} />
           ))}
         </ItemGroup>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-10 pb-2">
-        <p className="text-xs text-muted-foreground" aria-live="polite">
-          Showing {listings.length ? "1–" : ""}
-          {listings.length} of {listings.length} listings
-        </p>
-
-        <Pagination aria-label="Listing pages" className="mx-0 w-auto">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                tabIndex={-1}
-                className="pointer-events-none opacity-50"
-              />
-            </PaginationItem>
-
-            <PaginationItem>
-              <span className="flex size-9 items-center justify-center">
-                1
-              </span>
-            </PaginationItem>
-
-            <PaginationItem>
-              <PaginationNext
-                tabIndex={-1}
-                className="pointer-events-none opacity-50"
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      {cursor && (
+        <div className="flex justify-center pt-10 pb-2">
+          <Button type="button" variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
+            {loadingMore ? "Loading…" : "Load more"}
+          </Button>
+        </div>
+      )}
     </section>
   )
 }

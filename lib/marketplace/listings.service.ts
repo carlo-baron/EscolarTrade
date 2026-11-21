@@ -12,6 +12,7 @@ import {
   ListingWithLikeStateSchema,
   type ListingDetailedType,
 } from "@/schemas/listing.schema";
+import { Category } from "@/types/market.types";
 
 interface ListingFilter {
   search?: string;
@@ -22,8 +23,9 @@ interface ListingFilter {
   max?: string;
 }
 
+export type MarketplaceListingFilter = ListingFilter;
+
 const PAGE_SIZE = 8;
-const SCAN_SIZE = 50;
 
 function parsePesoFilter(value?: string): number | undefined | null {
   if (!value?.trim()) return undefined;
@@ -50,8 +52,9 @@ function parseListing(doc: QueryDocumentSnapshot | DocumentSnapshot) {
 }
 
 export async function getListings(
-  filter: ListingFilter
-): Promise<ListingDetailedType[]> {
+  filter: ListingFilter,
+  after?: string
+): Promise<{ listings: ListingDetailedType[]; nextCursor: string | null }> {
   const { uid } = await requireSession();
 
   const searchWords =
@@ -71,7 +74,7 @@ export async function getListings(
       maxCentavos !== undefined &&
       minCentavos > maxCentavos)
   ) {
-    return [];
+    return { listings: [], nextCursor: null };
   }
 
   let query = adminDb
@@ -89,54 +92,22 @@ export async function getListings(
 
   if (searchTokens.length > 0) {
     query = query.where("searchTokens", "array-contains-any", searchTokens);
-  } else if (filter.zone) {
-    query = query.where("meetupLocations", "array-contains", filter.zone);
   }
 
-  const listings = [];
-  let lastDoc: QueryDocumentSnapshot | undefined;
-
-  while (listings.length < PAGE_SIZE) {
-    let batchQuery = query.orderBy("createdAt", "desc").limit(SCAN_SIZE);
-
-    if (lastDoc) {
-      batchQuery = batchQuery.startAfter(lastDoc);
-    }
-
-    const snapshot = await batchQuery.get();
-    if (snapshot.empty) break;
-
-    for (const doc of snapshot.docs) {
-      lastDoc = doc;
-      const data = doc.data();
-
-      if (filter.zone && !data.meetupLocations?.includes(filter.zone)) {
-        continue;
-      }
-
-      if (
-        minCentavos !== undefined &&
-        data.priceCentavos < minCentavos
-      ) {
-        continue;
-      }
-
-      if (
-        maxCentavos !== undefined &&
-        data.priceCentavos > maxCentavos
-      ) {
-        continue;
-      }
-
-      listings.push(parseListing(doc));
-
-      if (listings.length === PAGE_SIZE) break;
-    }
-
-    if (snapshot.size < SCAN_SIZE) break;
+  if (filter.zone) query = query.where("meetupLocations", "array-contains", filter.zone);
+  if (minCentavos !== undefined) query = query.where("priceCentavos", ">=", minCentavos);
+  if (maxCentavos !== undefined) query = query.where("priceCentavos", "<=", maxCentavos);
+  query = query.orderBy("createdAt", "desc");
+  if (after) {
+    const cursor = await adminDb.collection("listings").doc(after).get();
+    if (cursor.exists) query = query.startAfter(cursor);
   }
 
-  if (listings.length === 0) return [];
+  const snapshot = await query.limit(PAGE_SIZE + 1).get();
+  const hasMore = snapshot.docs.length > PAGE_SIZE;
+  const docs = snapshot.docs.slice(0, PAGE_SIZE);
+  const listings = docs.map(parseListing);
+  if (!listings.length) return { listings: [], nextCursor: null };
 
   const likeRefs = listings.map((listing) =>
     adminDb
@@ -153,12 +124,13 @@ export async function getListings(
       .map((snapshot) => snapshot.id)
   );
 
-  return listings.map((listing) =>
+  const results = listings.map((listing) =>
     ListingWithLikeStateSchema.parse({
       ...listing,
       isLiked: likedIds.has(listing.id),
     })
   );
+  return { listings: results, nextCursor: hasMore ? docs.at(-1)!.id : null };
 }
 
 export async function getListingBySlug(
@@ -203,4 +175,55 @@ export async function getListingByIdForEdit(
 ): Promise<ListingType | null> {
   const { listing } = await requireListingOwner(listingId);
   return parseListing(listing);
+}
+
+export async function getRecommendedListings(category: Category | null){
+	const { uid } = await requireSession();
+	console.log(category);
+
+	let query = adminDb
+	.collection("listings")
+	.where("moderationStatus", "==", "visible")
+	.where("status", "in", ["Available", "Pending"]);
+
+	if(category !== null){
+		query = query.where("category", "==", category);
+	}
+
+	const snapshot = await query
+		.orderBy("likeCount", "desc")
+		.limit(4)
+		.get();
+
+	const listings = snapshot.docs.map(parseListing);
+
+  const likeRefs = listings.map((listing) =>
+    adminDb
+      .collection("users")
+      .doc(uid)
+      .collection("likes")
+      .doc(listing.id)
+  );
+
+  const likeSnapshots = await adminDb.getAll(...likeRefs);
+  const likedIds = new Set(
+    likeSnapshots
+      .filter((snapshot) => snapshot.exists)
+      .map((snapshot) => snapshot.id)
+  );
+
+  const results = listings.map((listing) =>
+    ListingWithLikeStateSchema.parse({
+      ...listing,
+      isLiked: likedIds.has(listing.id),
+    })
+  );
+
+	console.log(results);
+
+	return {
+		success: true,
+		message: "Recommended listings fetched successfully",
+		listings: results
+	};
 }

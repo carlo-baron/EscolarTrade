@@ -1,5 +1,5 @@
 import { EditListingClient } from "@/components/Marketplace/EditListingClient";
-import { getListingByIdForEdit } from "@/hooks/marketplace/listings.hook";
+import { getListingByIdForEdit } from "@/lib/marketplace/listings.service";
 
 interface EditListingPageProps {
   params: Promise<{ listingId: string }>;
