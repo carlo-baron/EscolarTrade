@@ -5,7 +5,7 @@ import { MarketplaceBrowser } from "@/components/Marketplace/MarketplaceBrowser"
 import { ListingCard } from "@/components/Marketplace/ListingCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { getListings } from "@/hooks/marketplace/listings.hook"
+import { getListings } from "@/lib/marketplace/listings.service"
 import { Breadcrumbs } from "@/components/Marketplace/Breadcrumbs"
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default async function MarketplacePage({
 		min: first(params.min) ?? undefined,
 		max: first(params.max) ?? undefined,
 	};
-	const listings = await getListings(filters);
+	const result = await getListings(filters);
 	const crumbs = {
 		links: [
 			{
@@ -51,7 +51,11 @@ export default async function MarketplacePage({
 					<Breadcrumbs breadcrumbs={crumbs} />
 				</div>
 			)}
-			<MarketplaceBrowser listings={listings} />
+			<MarketplaceBrowser
+				key={JSON.stringify(filters)}
+				{...result}
+				filters={filters}
+			/>
 			<section
 				className="bg-muted/60 py-8"
 				aria-labelledby="recommendations-heading"
@@ -84,7 +88,7 @@ export default async function MarketplacePage({
 						id="nursing-listings"
 						className="justify-items-center grid grid-cols-1 md:grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-4"
 					>
-						{listings.map((listing) => (
+						{result.listings.map((listing) => (
 							<ListingCard
 								key={listing.id}
 								listing={listing}
