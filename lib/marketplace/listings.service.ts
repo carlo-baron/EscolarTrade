@@ -12,6 +12,7 @@ import {
   ListingWithLikeStateSchema,
   type ListingDetailedType,
 } from "@/schemas/listing.schema";
+import { Category } from "@/types/market.types";
 
 interface ListingFilter {
   search?: string;
@@ -174,4 +175,55 @@ export async function getListingByIdForEdit(
 ): Promise<ListingType | null> {
   const { listing } = await requireListingOwner(listingId);
   return parseListing(listing);
+}
+
+export async function getRecommendedListings(category: Category | null){
+	const { uid } = await requireSession();
+	console.log(category);
+
+	let query = adminDb
+	.collection("listings")
+	.where("moderationStatus", "==", "visible")
+	.where("status", "in", ["Available", "Pending"]);
+
+	if(category !== null){
+		query = query.where("category", "==", category);
+	}
+
+	const snapshot = await query
+		.orderBy("likeCount", "desc")
+		.limit(4)
+		.get();
+
+	const listings = snapshot.docs.map(parseListing);
+
+  const likeRefs = listings.map((listing) =>
+    adminDb
+      .collection("users")
+      .doc(uid)
+      .collection("likes")
+      .doc(listing.id)
+  );
+
+  const likeSnapshots = await adminDb.getAll(...likeRefs);
+  const likedIds = new Set(
+    likeSnapshots
+      .filter((snapshot) => snapshot.exists)
+      .map((snapshot) => snapshot.id)
+  );
+
+  const results = listings.map((listing) =>
+    ListingWithLikeStateSchema.parse({
+      ...listing,
+      isLiked: likedIds.has(listing.id),
+    })
+  );
+
+	console.log(results);
+
+	return {
+		success: true,
+		message: "Recommended listings fetched successfully",
+		listings: results
+	};
 }

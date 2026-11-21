@@ -5,8 +5,9 @@ import { MarketplaceBrowser } from "@/components/Marketplace/MarketplaceBrowser"
 import { ListingCard } from "@/components/Marketplace/ListingCard"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { getListings } from "@/lib/marketplace/listings.service"
+import { getListings, getRecommendedListings } from "@/lib/marketplace/listings.service"
 import { Breadcrumbs } from "@/components/Marketplace/Breadcrumbs"
+import { Category } from "@/types/market.types"
 
 export const metadata: Metadata = {
 	title: "Marketplace | EscolarTrade",
@@ -42,6 +43,8 @@ export default async function MarketplacePage({
 		page: `Search results for "${filters.search}"`
 	};
 
+	const recommendedListings = await getRecommendedListings(filters.category === "" ? null : filters.category as Category);
+
 	return (
 		<main>
 			{filters.search && (
@@ -56,6 +59,7 @@ export default async function MarketplacePage({
 				{...result}
 				filters={filters}
 			/>
+
 			<section
 				className="bg-muted/60 py-8"
 				aria-labelledby="recommendations-heading"
@@ -70,10 +74,10 @@ export default async function MarketplacePage({
 								id="recommendations-heading"
 								className="font-heading text-xl font-semibold"
 							>
-								Recommended for Nursing &amp; Health Sciences
+								Recommended {filters.category === "" ? "Listings For You" : `Listings For ${filters.category}`}
 							</h2>
 							<p className="mt-1 text-sm text-muted-foreground">
-								Sample essentials for CEU Nursing Escolarians.
+								Essential items for an Escolarian.
 							</p>
 						</div>
 						<Link
@@ -88,7 +92,7 @@ export default async function MarketplacePage({
 						id="nursing-listings"
 						className="justify-items-center grid grid-cols-1 md:grid-cols-2 gap-6 lg:grid-cols-3 xl:grid-cols-4"
 					>
-						{result.listings.map((listing) => (
+						{recommendedListings.listings.splice(0, 4).map((listing) => (
 							<ListingCard
 								key={listing.id}
 								listing={listing}
@@ -97,6 +101,7 @@ export default async function MarketplacePage({
 					</div>
 				</div>
 			</section>
+
 			<section
 				className="mx-auto max-w-7xl px-4 py-8 lg:px-8"
 				aria-labelledby="seller-heading"
@@ -133,6 +138,7 @@ export default async function MarketplacePage({
 					</div>
 				</div>
 			</section>
+
 		</main>
 	)
 }
