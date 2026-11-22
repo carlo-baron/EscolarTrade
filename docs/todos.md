@@ -13,7 +13,7 @@
 - TODO: actual links (might redo the entire footer for this, the other way is to allow unauthenticated user to visit marketplace)
 
 ## My Listings
-- TODO: Get all listings instead of just 8
+- ~~TODO: Get all listings instead of just 8~~
 
 ## Likes
 - TODO for listing card and listing item, have an event to tell if the liked button happened (only for optimistic rendering)
