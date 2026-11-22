@@ -6,7 +6,6 @@ import { MarketplaceSnippet } from "@/components/Landing/MarketplaceSnippet"
 import { CTA } from "@/components/Landing/CTA"
 import { Footer, FooterLinkType } from "@/components/Landing/Footer"
 
-// TODO: actual links
 const FOOTER_LINKS: FooterLinkType[] = [
 	{
 		title: "Categories",

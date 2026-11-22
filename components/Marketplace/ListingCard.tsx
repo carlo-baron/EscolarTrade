@@ -51,7 +51,6 @@ export function ListingCard({ listing } : { listing: ListingDetailedType }){
 						variant="secondary"
 						className="absolute bottom-2 left-2 z-21"
 					>{listing.condition}</Badge>
-					{/* TODO: remove null detection after implementing recommended listings	 */}
 					<img
 						src={listing.images?.[0] ?? ""}
 						alt={listing.title}

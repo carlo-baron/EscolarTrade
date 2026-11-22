@@ -76,7 +76,6 @@ export function MarketCategories(){
 					CORE_CATEGORIES.map((item, index) => {
 						const Icon = item.icon;
 
-						// TODO: Link to actual route
 						return(
 							<Link
 								key={index}

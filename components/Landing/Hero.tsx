@@ -33,8 +33,6 @@ export function Hero(){
 }
 
 function FeaturedListingCard(){
-	// TODO: Link to actual listing
-	
 	return(
 		<div className="p-8 flex items-center justify-center h-full item-card lg:w-[40%]">
 			<Link href="">

@@ -27,8 +27,6 @@ import {
 import type { ListingDetailedType } from "@/schemas/listing.schema"
 import { useGetLikedListings } from "@/hooks/marketplace/likes.hook"
 
-
-// TODO for listing card and listing item, have an event to tell if the liked button happened (only for optimistic rendering)
 export default function LikesPage() {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
