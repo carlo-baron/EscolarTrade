@@ -21,18 +21,22 @@ import {
 	MapPin,
 } from "lucide-react";
 import { Separator } from "../ui/separator";
+import { getFeaturedListing } from "@/lib/marketplace/listings.service";
+import { ListingType } from "@/schemas/listing.schema";
 
-export function Hero(){
+export async function Hero(){
+	const featuredListing = await getFeaturedListing();
+
 	return(
 		<section id="hero"
 			className="border pt-14 w-full gap-0 lg:gap-4 flex flex-col lg:flex-row hero h-fit min-h-screen">
 			<Banner />
-			<FeaturedListingCard />
+			<FeaturedListingCard listing={featuredListing}/>
 		</section>
 	);
 }
 
-function FeaturedListingCard(){
+async function FeaturedListingCard({ listing } : { listing: ListingType }){
 	return(
 		<div className="p-8 flex items-center justify-center h-full item-card lg:w-[40%]">
 			<Link href="">
@@ -41,41 +45,41 @@ function FeaturedListingCard(){
 						<div className='flex gap-2'>
 							<Avatar>
 								<AvatarImage src="" />
-								<AvatarFallback>CN</AvatarFallback>
+								<AvatarFallback>{listing.seller.displayName[0]}</AvatarFallback>
 							</Avatar>
 							<span>
-								<CardTitle>Villanueva, Nicho</CardTitle>
-								<CardDescription className='text-xs'>BSIT - 3rd Year</CardDescription>
+								<CardTitle>{listing.seller.displayName}</CardTitle>
+								<CardDescription className='text-xs'>{listing.seller.program}</CardDescription>
 							</span>
 						</div>
 						<CardAction>
-							<Badge>Active Listing</Badge>
+							<Badge>{listing.status}</Badge>
 						</CardAction>
 					</CardHeader>
 					<Separator />
 					<CardContent>
 						<img 
 							className='rounded-md object-cover w-full h-[300px]'
-							src='https://lh3.googleusercontent.com/aida-public/AB6AXuDo_sF4xBq10AxbjZovJ99cxhfEgiiUds7-tKAvHcSiRIu4DI0naxhiOn0qc66uzSgaW9JjmGi3bt3etqtMdJU30B3inZ5J4wi0N-mvRUyh-ZFevaeN-QdG56-BH_AndGgst2tKlCwbDNx7gBaV_LwvEQ0Rhi33iETI5EtIhoEyyBEW5o8kMf5b8dsGGSnTOax9rLDoOJWOdiXcUhBRp7TjaSfpofcz-f8BXMVnxFFoc-W5VrVquaWD' 
-							alt="Lab Item"
+							src={listing.images[0]}
+							alt={listing.title}
 						/>
 					</CardContent>
 					<CardFooter className='flex-col'>
 						<span className='flex w-full items-center'>
 							<p className="text-md font-semibold">
-								3M Litmann Classic III + Lab Gown
+								{listing.title}
 							</p>
 							<p className="ml-auto text-lg font-bold">
-								₱4,200
+								₱{listing.priceCentavos / 100}
 							</p>
 						</span>
 						<p className="text-xs">
-							Used for 1 clinical rotation only. Complete with original spare earpieces and box.
+							{listing.description}
 						</p>
 						<Card className='mt-4 px-4 py-2 w-full'>
 							<p className="text-xs flex gap-2 items-center">
 								<MapPin />
-								Centrodome Lobby
+								{listing.meetupLocations[0]}
 								<span className='text-muted-foreground ml-auto'>Cash</span>
 							</p>
 						</Card>

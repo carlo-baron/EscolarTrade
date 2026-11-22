@@ -79,7 +79,7 @@ export function MarketCategories(){
 						return(
 							<Link
 								key={index}
-								href=""
+								href="/auth?mode=signup"
 								className="block h-full lg:last:col-span-2"
 							>
 								<Card className='h-full'>
