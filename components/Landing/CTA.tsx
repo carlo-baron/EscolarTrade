@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
   Card,
 	CardHeader,
@@ -83,10 +84,12 @@ export function CTA(){
 								<CardDescription>Sign in with your official university credentials to unlock immediate browsing and instant listing.</CardDescription>
 							</CardHeader>
 							<CardFooter className="flex flex-col items-center">
-								<Button className="w-full" size="lg">
-									Join with Student Email
-									<ArrowRight />
-								</Button>
+								<Link href="/auth?mode=signup">
+									<Button className="w-full" size="lg">
+										Join with Student Email
+										<ArrowRight />
+									</Button>
+								</Link>
 								<p className="text-xs text-muted-foreground font-medium">Requires CEU Gmail Account</p>
 							</CardFooter>
 						</Card>
