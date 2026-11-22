@@ -177,10 +177,7 @@ export async function getListingByIdForEdit(
   return parseListing(listing);
 }
 
-export async function getRecommendedListings(category: Category | null){
-	const { uid } = await requireSession();
-	console.log(category);
-
+async function getTopLikedListingsByCategory(category: Category | null){
 	let query = adminDb
 	.collection("listings")
 	.where("moderationStatus", "==", "visible")
@@ -195,7 +192,13 @@ export async function getRecommendedListings(category: Category | null){
 		.limit(4)
 		.get();
 
-	const listings = snapshot.docs.map(parseListing);
+	return snapshot.docs.map(parseListing);
+}
+
+export async function getRecommendedListings(category: Category | null){
+	const { uid } = await requireSession();
+
+	const listings = await getTopLikedListingsByCategory(category);
 
   const likeRefs = listings.map((listing) =>
     adminDb
@@ -219,11 +222,26 @@ export async function getRecommendedListings(category: Category | null){
     })
   );
 
-	console.log(results);
-
 	return {
 		success: true,
 		message: "Recommended listings fetched successfully",
+		listings: results
+	};
+}
+
+export async function getMarketplaceSnippet(category: Category | null){
+	const listings = await getTopLikedListingsByCategory(category);
+
+  const results = listings.map((listing) =>
+    ListingWithLikeStateSchema.parse({
+      ...listing,
+      isLiked: false,
+    })
+  );
+
+	return {
+		success: true,
+		message: "Marketplace snippet fetched successfully",
 		listings: results
 	};
 }

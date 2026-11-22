@@ -186,8 +186,7 @@ service cloud.firestore {
           || resource.data.moderationStatus == 'visible'
         );
 
-      allow list: if signedIn()
-        && boundedQuery(50)
+      allow list: if boundedQuery(50)
         && (
           resource.data.sellerId == request.auth.uid
           || acceptsNewContact(resource.data)
