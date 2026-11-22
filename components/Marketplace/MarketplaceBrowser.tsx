@@ -1,24 +1,27 @@
 "use client"
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Link from "next/link"
 import { useState, type SubmitEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LayoutGrid, List, ShoppingBasket, Plus } from "lucide-react"
 
 import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
 } from "@/components/ui/empty"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { ItemGroup } from "@/components/ui/item"
 import { loadMoreListings } from "@/app/(app)/marketplace/listings.action"
@@ -29,124 +32,129 @@ import type { ListingDetailedType } from "@/schemas/listing.schema"
 import type { MarketplaceListingFilter } from "@/lib/marketplace/listings.service"
 
 type MarketplaceBrowserProps = {
-  listings: ListingDetailedType[]
-  nextCursor: string | null
-  filters: MarketplaceListingFilter
+	listings: ListingDetailedType[]
+	nextCursor: string | null
+	filters: MarketplaceListingFilter
 }
 
 export function MarketplaceBrowser({
-  listings,
-  nextCursor: initialCursor,
-  filters,
+	listings,
+	nextCursor: initialCursor,
+	filters,
 }: MarketplaceBrowserProps) {
-  const [allListings, setAllListings] = useState(listings)
-  const [cursor, setCursor] = useState(initialCursor)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [layout, setLayout] = useState<"grid" | "list">("grid")
-  const router = useRouter()
-  const searchParams = useSearchParams()
+	const [allListings, setAllListings] = useState(listings)
+	const [cursor, setCursor] = useState(initialCursor)
+	const [loadingMore, setLoadingMore] = useState(false)
+	const [layout, setLayout] = useState<"grid" | "list">("grid")
+	const router = useRouter()
+	const searchParams = useSearchParams()
 
-  const zone = searchParams.get("zone") ?? ""
-  const condition = searchParams.get("condition") ?? ""
-  const min = searchParams.get("min") ?? ""
-  const max = searchParams.get("max") ?? ""
+	const zone = searchParams.get("zone") ?? ""
+	const condition = searchParams.get("condition") ?? ""
+	const min = searchParams.get("min") ?? ""
+	const max = searchParams.get("max") ?? ""
 
-  async function handleLoadMore() {
-    if (!cursor || loadingMore) return
-    setLoadingMore(true)
-    try {
-      const result = await loadMoreListings(filters, cursor)
-      setAllListings((current) => [...current, ...result.listings])
-      setCursor(result.nextCursor)
-    } finally {
-      setLoadingMore(false)
-    }
-  }
+	async function handleLoadMore() {
+		if (!cursor || loadingMore) return
+		setLoadingMore(true)
+		try {
+			const result = await loadMoreListings(filters, cursor)
+			setAllListings((current) => [...current, ...result.listings])
+			setCursor(result.nextCursor)
+		} finally {
+			setLoadingMore(false)
+		}
+	}
 
-  function createMarketplaceUrl(
-    updates: Record<string, string | null>
-  ) {
-    const params = new URLSearchParams(searchParams.toString())
+	function createMarketplaceUrl(
+		updates: Record<string, string | null>
+	) {
+		const params = new URLSearchParams(searchParams.toString())
 
-    Object.entries(updates).forEach(([key, value]) => {
-      const normalizedValue = value?.trim()
+		Object.entries(updates).forEach(([key, value]) => {
+			const normalizedValue = value?.trim()
 
-      if (normalizedValue) {
-        params.set(key, normalizedValue)
-      } else {
-        params.delete(key)
-      }
-    })
+			if (normalizedValue) {
+				params.set(key, normalizedValue)
+			} else {
+				params.delete(key)
+			}
+		})
 
-    params.delete("page")
+		params.delete("page")
 
-    const query = params.toString()
-    return query ? `/marketplace?${query}` : "/marketplace"
-  }
+		const query = params.toString()
+		return query ? `/marketplace?${query}` : "/marketplace"
+	}
 
-  function handleApplyFilters(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault()
+	function handleApplyFilters(event: SubmitEvent<HTMLFormElement>) {
+		event.preventDefault()
 
-    const formData = new FormData(event.currentTarget)
+		const formData = new FormData(event.currentTarget)
 
-    router.push(
-      createMarketplaceUrl({
-        zone: formData.get("zone")?.toString() || null,
-        condition: formData.get("condition")?.toString() || null,
-        min: formData.get("min")?.toString() || null,
-        max: formData.get("max")?.toString() || null,
-      }),
-      { scroll: false }
-    )
-  }
+		router.push(
+			createMarketplaceUrl({
+				zone: formData.get("zone")?.toString() || null,
+				condition: formData.get("condition")?.toString() || null,
+				min: formData.get("min")?.toString() || null,
+				max: formData.get("max")?.toString() || null,
+			}),
+			{ scroll: false }
+		)
+	}
 
-  function handleClearFilters() {
-    router.push(
-      createMarketplaceUrl({
-        zone: null,
-        condition: null,
-        min: null,
-        max: null,
-      }),
-      { scroll: false }
-    )
-  }
+	function handleClearFilters() {
+		router.push(
+			createMarketplaceUrl({
+				zone: null,
+				condition: null,
+				min: null,
+				max: null,
+			}),
+			{ scroll: false }
+		)
+	}
 
-  return (
-    <section
-      aria-label="Marketplace listings"
-      className="mx-auto max-w-7xl px-4 py-6 lg:px-8"
-    >
-      <form
-        onSubmit={handleApplyFilters}
-        className="grid gap-4 rounded-xl bg-muted p-4 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:p-5"
-      >
-        <Field>
-          <FieldLabel
-            htmlFor="campus-zone"
-            className="text-xs text-muted-foreground uppercase"
-          >
-            Campus Zone
-          </FieldLabel>
+	return (
+		<section
+			aria-label="Marketplace listings"
+			className="mx-auto max-w-7xl px-4 py-6 lg:px-8"
+		>
+			<form
+				onSubmit={handleApplyFilters}
+				className="grid gap-4 rounded-xl bg-muted p-4 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end lg:p-5"
+			>
+				<Field>
+					<FieldLabel
+						htmlFor="campus-zone"
+						className="text-xs text-muted-foreground uppercase"
+					>
+						Campus Zone
+					</FieldLabel>
 
-          <NativeSelect
-            key={`zone-${zone}`}
-            id="campus-zone"
-            name="zone"
-            defaultValue={zone}
-            className="w-full"
-          >
-            <NativeSelectOption value="">
-              All Drop-off Locations
-            </NativeSelectOption>
+					<Select
+						key={`zone-${zone}`}
+						name="zone"
+						defaultValue={zone}
+					>
+						<SelectTrigger id="campus-zone" className="w-full">
+							<SelectValue placeholder="All Drop-off Locations" />
+						</SelectTrigger>
 
-            {locations.map((location) => (
-              <NativeSelectOption key={location} value={location}>
-                {location}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </Field>
+						<SelectContent>
+							<SelectItem value="">
+								All Drop-off Locations
+							</SelectItem>
+
+							{locations.map((location) => (
+								<SelectItem key={location} value={location}>
+									{location}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+
+				</Field>
 
         <Field>
           <FieldLabel
@@ -156,24 +164,29 @@ export function MarketplaceBrowser({
             Condition
           </FieldLabel>
 
-          <NativeSelect
-            key={`condition-${condition}`}
-            id="condition"
-            name="condition"
-            defaultValue={condition}
-            className="w-full"
-          >
-            <NativeSelectOption value="">
-              Any Condition
-            </NativeSelectOption>
+					<Select
+						key={`condition-${condition}`}
+						name="condition"
+						defaultValue={condition}
+					>
+						<SelectTrigger id="condition" className="w-full">
+							<SelectValue placeholder="Any Condition" />
+						</SelectTrigger>
 
-            {conditions.map((item) => (
-              <NativeSelectOption key={item} value={item}>
-                {item}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </Field>
+						<SelectContent>
+							<SelectItem value="">
+								Any Condition
+							</SelectItem>
+
+							{conditions.map((item) => (
+								<SelectItem key={item} value={item}>
+									{item}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+
+				</Field>
 
         <Field>
           <FieldLabel
@@ -225,15 +238,9 @@ export function MarketplaceBrowser({
       </form>
 
       <div className="flex flex-col gap-4 py-7 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <h1 className="font-heading text-2xl font-semibold">
-            Campus Listings
-          </h1>
-
-          <span className="text-xs text-muted-foreground">
-            Sample campus listings
-          </span>
-        </div>
+				<h1 className="font-heading text-2xl font-semibold">
+					Campus Listings
+				</h1>
 
         <div className="flex items-center gap-2">
           <label
@@ -243,17 +250,40 @@ export function MarketplaceBrowser({
             Sort:
           </label>
 
-          <NativeSelect id="listing-sort" name="sort" defaultValue="recent">
-            <NativeSelectOption value="recent">
-              Most Recent
-            </NativeSelectOption>
-            <NativeSelectOption value="low">
-              Price: Low to High
-            </NativeSelectOption>
-            <NativeSelectOption value="high">
-              Price: High to Low
-            </NativeSelectOption>
-          </NativeSelect>
+					<Select
+						id="listing-sort"
+						name="sort"
+						defaultValue=""
+						onValueChange={(val) => {
+							const newData = [...allListings];
+
+							if(val === "Low to High"){
+								newData.sort((a, b) => a.priceCentavos - b.priceCentavos);
+							}
+
+							if(val === "High to Low"){
+								newData.sort((a, b) => b.priceCentavos - a.priceCentavos);
+							}
+
+							setAllListings(newData);
+						}}
+					>
+						<SelectTrigger id="listing-sort" className="w-full">
+							<SelectValue placeholder="Most Recent" />
+						</SelectTrigger>
+
+						<SelectContent>
+							<SelectItem value="">
+								Most Recent
+							</SelectItem>
+							<SelectItem value="Low to High">
+								Price: Low to High
+							</SelectItem>
+							<SelectItem value="High to Low">
+								Price: High to Low
+							</SelectItem>
+						</SelectContent>
+					</Select>
 
           <div className="flex gap-1 rounded-lg bg-muted p-1">
             <Button

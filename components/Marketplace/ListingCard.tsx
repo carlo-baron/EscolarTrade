@@ -52,7 +52,7 @@ export function ListingCard({ listing } : { listing: ListingDetailedType }){
 						className="absolute bottom-2 left-2 z-21"
 					>{listing.condition}</Badge>
 					<img
-						src={listing.images?.[0] ?? ""}
+						src={listing.images[0]}
 						alt={listing.title}
 						className="relative z-20 aspect-video w-full object-cover"
 					/>
@@ -70,16 +70,16 @@ export function ListingCard({ listing } : { listing: ListingDetailedType }){
 				<CardFooter className="flex-1">
 					<div className="text-xs flex justify-between w-full gap-2">
 						<div className="flex items-center gap-1">
-							<p className="text-sm font-medium truncate">{listing.seller?.displayName}</p>
+							<p className="text-sm font-medium truncate">{listing.seller.displayName}</p>
 							<p className="text-muted-foreground">
-								• {listing.seller?.program}
+								• {listing.seller.program}
 							</p>
 						</div>
 
 						<div className="flex items-center min-w-0 flex-1 justify-end text-muted-foreground">
 							<MapPin size={16} className="shrink-0" />
 							<p className="truncate">
-								{listing.meetupLocations?.[0] ?? ""}
+								{listing.meetupLocations[0]}
 							</p>
 						</div>
 					</div>

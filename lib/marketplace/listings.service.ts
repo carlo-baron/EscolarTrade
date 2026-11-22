@@ -12,7 +12,7 @@ import {
   ListingWithLikeStateSchema,
   type ListingDetailedType,
 } from "@/schemas/listing.schema";
-import { Category } from "@/types/market.types";
+import { categories, Category } from "@/types/market.types";
 
 interface ListingFilter {
   search?: string;
@@ -175,6 +175,22 @@ export async function getListingByIdForEdit(
 ): Promise<ListingType | null> {
   const { listing } = await requireListingOwner(listingId);
   return parseListing(listing);
+}
+
+// pick a random category and get the top liked listing
+export async function getFeaturedListing(){
+	const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+
+	const snapshot = await adminDb
+		.collection("listings")
+		.where("moderationStatus", "==", "visible")
+		.where("status", "in", ["Available", "Pending"])
+		.where("category", "==", randomCategory)
+		.orderBy("likeCount", "desc")
+		.limit(1)
+		.get();
+
+	return snapshot.docs.map(parseListing)[0];
 }
 
 async function getTopLikedListingsByCategory(category: Category | null){
