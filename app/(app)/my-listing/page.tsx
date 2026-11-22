@@ -47,7 +47,10 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { ListingType } from "@/schemas/listing.schema"
-import { useGetMyListings } from "@/hooks/marketplace/mylistings.hook"
+import {
+	useGetMyListings,
+	type MyListingsCursor,
+} from "@/hooks/marketplace/mylistings.hook"
 import { listingStatuses } from "@/types/market.types"
 import { updateListingStatus } from "./listing-status.server"
 import { deleteSoldListing } from "./listing-delete.server"
@@ -63,6 +66,17 @@ const statusFilters: StatusFilter[] = [
 	"Out of Stock",
 ]
 
+const sortLabels: Record<string, string> = {
+	recent: "Most Recent",
+	"price-low": "Lowest to Highest",
+	"price-high": "Highest to Lowest",
+}
+
+function compareListingDates(a: ListingType, b: ListingType) {
+	const dateDifference = b.createdAt.getTime() - a.createdAt.getTime()
+	return dateDifference || b.id.localeCompare(a.id)
+}
+
 function formatPrice(priceCentavos: number) {
 	return `₱${(priceCentavos / 100).toLocaleString("en-PH", {
 minimumFractionDigits: 0,
@@ -72,9 +86,13 @@ maximumFractionDigits: 2,
 
 export default function MyListingsPage() {
 	const [listings, setListings] = useState<ListingType[]>([]);
+	const [nextCursor, setNextCursor] = useState<MyListingsCursor | null>(null)
+	const [hasMore, setHasMore] = useState(false)
+	const [isLoadingListings, setIsLoadingListings] = useState(true)
+	const [isLoadingMore, setIsLoadingMore] = useState(false)
 	const [activeTab, setActiveTab] = useState<StatusFilter>("All")
 	const [search, setSearch] = useState("")
-	const [sort, setSort] = useState("newest")
+	const [sort, setSort] = useState("recent")
 	const [listingToMarkSold, setListingToMarkSold] =
 	useState<ListingType | null>(null)
 	const [listingToDelete, setListingToDelete] = useState<ListingType | null>(null)
@@ -84,13 +102,51 @@ export default function MyListingsPage() {
 	const getMyListings = useGetMyListings();
 
 	useEffect(() => {
-		async function getListings(){
-			const myListings = await getMyListings();
-			setListings(myListings);
-		}
+		let isCurrent = true
+		setIsLoadingListings(true)
+		setListings([])
+		setNextCursor(null)
+		setHasMore(false)
 
-		getListings();
+		getMyListings()
+			.then((result) => {
+				if (!isCurrent) return
+				setListings(result.listings)
+				setNextCursor(result.nextCursor)
+				setHasMore(result.hasMore)
+			})
+			.catch(() => {
+				if (!isCurrent) return
+				toast.error("Listings could not be loaded", {
+					description: "Please try again.",
+				})
+			})
+			.finally(() => {
+				if (isCurrent) setIsLoadingListings(false)
+			})
+
+		return () => {
+			isCurrent = false
+		}
 	}, [getMyListings]);
+
+	async function handleLoadMore() {
+		if (!nextCursor || !hasMore || isLoadingMore) return
+
+		setIsLoadingMore(true)
+		try {
+			const result = await getMyListings(nextCursor)
+			setListings((current) => [...current, ...result.listings])
+			setNextCursor(result.nextCursor)
+			setHasMore(result.hasMore)
+		} catch {
+			toast.error("More listings could not be loaded", {
+				description: "Please try again.",
+			})
+		} finally {
+			setIsLoadingMore(false)
+		}
+	}
 
 	const filteredListings = useMemo(() => {
 		const normalizedSearch = search.trim().toLowerCase()
@@ -108,14 +164,12 @@ export default function MyListingsPage() {
 			})
 			.sort((a, b) => {
 				switch (sort) {
-					case "oldest":
-						return a.createdAt.toString().localeCompare(b.createdAt.toString())
 					case "price-low":
 						return a.priceCentavos - b.priceCentavos
 					case "price-high":
 						return b.priceCentavos - a.priceCentavos
 					default:
-						return b.createdAt.toString().localeCompare(a.createdAt.toString())
+						return compareListingDates(a, b)
 				}
 			})
 	}, [listings, activeTab, search, sort])
@@ -262,26 +316,29 @@ export default function MyListingsPage() {
 
 					<Select
 						value={sort}
-						onValueChange={(value) => setSort(value ?? "newest")}
+						onValueChange={(value) => setSort(value ?? "recent")}
 					>
 						<SelectTrigger className="w-full sm:w-[170px]">
-							<SelectValue placeholder="Sort listings" />
+							<SelectValue>
+								{sortLabels[sort] ?? "Sort listings"}
+							</SelectValue>
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="newest">Newest First</SelectItem>
-							<SelectItem value="oldest">Oldest First</SelectItem>
-							<SelectItem value="price-low">Price: Low to High</SelectItem>
-							<SelectItem value="price-high">Price: High to Low</SelectItem>
+							<SelectItem value="recent">Most Recent</SelectItem>
+							<SelectItem value="price-low">Lowest to Highest</SelectItem>
+							<SelectItem value="price-high">Highest to Lowest</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 			</div>
 
 			<p className="mb-3 mt-5 text-sm text-muted-foreground">
-				Showing {filteredListings.length} listings
+				{isLoadingListings
+					? "Loading listings..."
+					: `Showing ${filteredListings.length} listings`}
 			</p>
 
-			{filteredListings.length > 0 ? (
+			{isLoadingListings ? null : filteredListings.length > 0 ? (
 				<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
 					{filteredListings.map((listing) => {
 						const isUpdatingStatus = updatingListingIds.includes(listing.id)
@@ -473,6 +530,18 @@ export default function MyListingsPage() {
 						</EmptyContent>
 					</Empty>
 				)}
+
+			{hasMore && (
+				<div className="mt-8 flex justify-center">
+					<Button
+						variant="outline"
+						onClick={handleLoadMore}
+						disabled={isLoadingMore}
+					>
+						{isLoadingMore ? "Loading..." : "Load more"}
+					</Button>
+				</div>
+			)}
 
 			<AlertDialog
 				open={listingToMarkSold !== null}

@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link"
-import { useState, type SubmitEvent } from "react"
+import { useMemo, useState, type SubmitEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LayoutGrid, List, ShoppingBasket, Plus } from "lucide-react"
 
@@ -37,6 +37,14 @@ type MarketplaceBrowserProps = {
 	filters: MarketplaceListingFilter
 }
 
+type MarketplaceSort = "recent" | "price-low" | "price-high"
+
+const sortLabels: Record<MarketplaceSort, string> = {
+	recent: "Most Recent",
+	"price-low": "Lowest to Highest",
+	"price-high": "Highest to Lowest",
+}
+
 export function MarketplaceBrowser({
 	listings,
 	nextCursor: initialCursor,
@@ -46,8 +54,22 @@ export function MarketplaceBrowser({
 	const [cursor, setCursor] = useState(initialCursor)
 	const [loadingMore, setLoadingMore] = useState(false)
 	const [layout, setLayout] = useState<"grid" | "list">("grid")
+	const [sort, setSort] = useState<MarketplaceSort>("recent")
 	const router = useRouter()
 	const searchParams = useSearchParams()
+	const sortedListings = useMemo(() => {
+		if (sort === "recent") return allListings
+
+		const result = [...allListings]
+
+		result.sort((a, b) =>
+			sort === "price-low"
+				? a.priceCentavos - b.priceCentavos
+				: b.priceCentavos - a.priceCentavos
+		)
+
+		return result
+	}, [allListings, sort])
 
 	const zone = searchParams.get("zone") ?? ""
 	const condition = searchParams.get("condition") ?? ""
@@ -253,35 +275,23 @@ export function MarketplaceBrowser({
 					<Select
 						id="listing-sort"
 						name="sort"
-						defaultValue=""
-						onValueChange={(val) => {
-							const newData = [...allListings];
-
-							if(val === "Low to High"){
-								newData.sort((a, b) => a.priceCentavos - b.priceCentavos);
-							}
-
-							if(val === "High to Low"){
-								newData.sort((a, b) => b.priceCentavos - a.priceCentavos);
-							}
-
-							setAllListings(newData);
+						value={sort}
+						onValueChange={(value) => {
+							if (
+								value === "recent" ||
+								value === "price-low" ||
+								value === "price-high"
+							) setSort(value)
 						}}
 					>
 						<SelectTrigger id="listing-sort" className="w-full">
-							<SelectValue placeholder="Most Recent" />
+							<SelectValue>{sortLabels[sort]}</SelectValue>
 						</SelectTrigger>
 
 						<SelectContent>
-							<SelectItem value="">
-								Most Recent
-							</SelectItem>
-							<SelectItem value="Low to High">
-								Price: Low to High
-							</SelectItem>
-							<SelectItem value="High to Low">
-								Price: High to Low
-							</SelectItem>
+							<SelectItem value="recent">Most Recent</SelectItem>
+							<SelectItem value="price-low">Lowest to Highest</SelectItem>
+							<SelectItem value="price-high">Highest to Lowest</SelectItem>
 						</SelectContent>
 					</Select>
 
@@ -311,7 +321,7 @@ export function MarketplaceBrowser({
         </div>
       </div>
 
-      {allListings.length === 0 ? (
+	      {sortedListings.length === 0 ? (
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
@@ -330,13 +340,13 @@ export function MarketplaceBrowser({
         </Empty>
       ) : layout === "grid" ? (
         <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {allListings.map((listing) => (
+	          {sortedListings.map((listing) => (
             <ListingCard key={listing.id} listing={listing} />
           ))}
         </div>
       ) : (
         <ItemGroup>
-          {allListings.map((listing) => (
+	          {sortedListings.map((listing) => (
             <ListingItem key={listing.id} listing={listing} />
           ))}
         </ItemGroup>
