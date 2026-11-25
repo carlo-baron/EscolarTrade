@@ -2,6 +2,14 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { ListingCard } from "../Marketplace/ListingCard";
 import { getMarketplaceSnippet } from "@/lib/marketplace/listings.service";
+import { PackageSearch } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 
 export async function MarketplaceSnippet(){
 	const recommendedListings = await getMarketplaceSnippet(null);
@@ -22,11 +30,27 @@ export async function MarketplaceSnippet(){
 			</div>
 			<div className="listings gap-4 justify-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
 				{
-					recommendedListings.listings.map((item) => {
-						return(
-							<ListingCard listing={item} key={item.id} />
-						);
-					})
+					recommendedListings.listings.length > 0 ?
+						recommendedListings.listings.map((item) => {
+							return(
+								<ListingCard listing={item} key={item.id} />
+							);
+						})
+						:
+						(
+							<Empty className="col-span-full">
+								<EmptyHeader>
+									<EmptyMedia variant="icon">
+										<PackageSearch />
+									</EmptyMedia>
+									<EmptyTitle>No listings found</EmptyTitle>
+									<EmptyDescription>
+										There are no listings to show right now. Try adjusting your filters
+										or check back later.
+									</EmptyDescription>
+								</EmptyHeader>
+							</Empty>
+						)
 				}
 			</div>
 		</section>

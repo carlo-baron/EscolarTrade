@@ -216,6 +216,14 @@ export async function getRecommendedListings(category: Category | null){
 
 	const listings = await getTopLikedListingsByCategory(category);
 
+	if (listings.length === 0) {
+		return {
+			success: true,
+			message: "No recommended listings found",
+			listings: [],
+		};
+	}
+
   const likeRefs = listings.map((listing) =>
     adminDb
       .collection("users")

@@ -23,6 +23,51 @@ import {
 import { Separator } from "../ui/separator";
 import { getFeaturedListing } from "@/lib/marketplace/listings.service";
 import { ListingType } from "@/schemas/listing.schema";
+import { PROGRAMS } from "@/types/school.types";
+import { categories, conditions, locations } from "@/types/market.types";
+
+export const fallbackListing = {
+  id: "fallback-listing-001",
+  slug: "sample-mechanical-keyboard",
+
+  images: [
+    "https://placehold.co/800x800/png?text=Sample+1",
+    "https://placehold.co/800x800/png?text=Sample+2",
+    "https://placehold.co/800x800/png?text=Sample+3",
+  ],
+  title: "Sample Mechanical Keyboard",
+  description:
+    "Lightly used 75% mechanical keyboard with hot-swappable switches. Comes with keycap puller and original box.",
+
+  priceCentavos: 250000,
+  initialPriceCentavos: 250000,
+  previousPriceCentavos: null,
+  priceChangedAt: null,
+
+  category: categories[0],
+  condition: conditions[0],
+  meetupLocations: [locations[0]],
+
+  sellerId: "fallback-seller",
+  searchTokens: ["sample", "mechanical", "keyboard"],
+
+  status: "Available",
+  moderationStatus: "visible",
+  moderationReason: "",
+  moderationVersion: 1,
+
+  createdAt: new Date("2026-01-01T00:00:00Z"),
+  publishedAt: new Date("2026-01-01T00:00:00Z"),
+  updatedAt: new Date("2026-01-01T00:00:00Z"),
+  soldAt: null,
+
+  seller: {
+    displayName: "Sample Seller",
+    program: PROGRAMS[0].value,
+  },
+
+  likeCount: 0,
+} satisfies ListingType;
 
 export async function Hero(){
 	const featuredListing = await getFeaturedListing();
@@ -31,7 +76,7 @@ export async function Hero(){
 		<section id="hero"
 			className="border pt-14 w-full gap-0 lg:gap-4 flex flex-col lg:flex-row hero h-fit min-h-screen">
 			<Banner />
-			<FeaturedListingCard listing={featuredListing}/>
+			<FeaturedListingCard listing={featuredListing ?? fallbackListing}/>
 		</section>
 	);
 }
