@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, MessageSquareText, Flag } from "lucide-react";
+import { MessageSquareText, Flag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,9 +28,13 @@ import { LikeButton } from "../LikeButton";
 import { useState } from "react";
 import { likeListing } from "@/app/(app)/marketplace/like.server";
 import { toast } from "sonner";
+import { useConversation } from "@/hooks/marketplace/conversation.hook";
+import { useRouter } from "next/navigation";
 
 export function ListingDetailCard({ listing } : { listing: ListingDetailedType }){
 	const [isLiked, setIsLiked]	= useState(listing.isLiked);
+	const getConversation = useConversation();
+	const router = useRouter();
 
 	async function handleLikeListing(state: boolean){
 		setIsLiked(state);
@@ -41,6 +45,19 @@ export function ListingDetailCard({ listing } : { listing: ListingDetailedType }
 		}catch {
 			toast.error("Could not like this listing. Please try again.")
 			setIsLiked(!state);
+		}
+	}
+
+	async function handleMessageSeller(){
+		try{
+			const conversation = await getConversation(listing.id);
+			if(conversation.success){
+				router.push(`/messages/${conversation.conversationId}`);
+				return;
+			}
+			toast.error(conversation.message);
+		}catch{
+			toast.error("Something went wrong.");
 		}
 	}
 
@@ -82,10 +99,9 @@ export function ListingDetailCard({ listing } : { listing: ListingDetailedType }
 				</CardContent>
 				<CardFooter className="flex-col">
 					<div className="w-full flex gap-2">
-						<Button className="flex-1" size="lg">
+						<Button className="flex-1" size="lg" onClick={handleMessageSeller}>
 							<MessageSquareText />
 							Message Seller</Button>
-						{/* <Button className="aspect-square" size="lg" variant="outline"><Heart /></Button> */}
 						<LikeButton 
 							variant="outline"
 							className="aspect-square"
