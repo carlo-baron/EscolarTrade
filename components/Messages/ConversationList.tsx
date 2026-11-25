@@ -17,11 +17,19 @@ import {
 	InputGroupAddon,
 	InputGroupInput,
 } from "@/components/ui/input-group"
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
-import { SAMPLE_CONVERSATIONS } from "@/data/sample-conversations";
-import { Search } from "lucide-react";
-import { Conversation } from "@/types/messages.type";
-import { useState } from "react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Search, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useListConversations } from "@/hooks/marketplace/conversation.hook";
+import { ConversationType } from "@/schemas/conversation.schema";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@/components/ui/empty"
 
 type ChatFilter = "all" | "buying" | "selling" | "unread"
 
@@ -29,6 +37,19 @@ export function ConversationList() {
 	const [selectedConversation, setSelectedConversation] =
 	useState<string>("");
 	const [chatFilter, setChatFilter] = useState<ChatFilter>("all");
+	const [conversationList, setConversationList] = useState<ConversationType[]>([]);
+	const listConversations = useListConversations();
+
+	useEffect(() => {
+		async function getConversations(){
+			const data = await listConversations();
+			if(data.success){
+				setConversationList(data.conversations as ConversationType[]);
+			}
+		}
+
+		getConversations();
+	}, [listConversations]);
 
 	return (
 		<aside className="flex h-full min-h-0 w-[30%] shrink-0 flex-col py-4">
@@ -66,14 +87,30 @@ export function ConversationList() {
 
 			<ScrollArea className="mt-4 min-h-0 flex-1">
 				<ItemGroup className="gap-0">
-					{SAMPLE_CONVERSATIONS.map((conversation) => (
-						<ConversationItem
-							key={conversation.id}
-							conversation={conversation}
-							selected={selectedConversation}
-							onSelectAction={setSelectedConversation}
-						/>
-					))}
+					{conversationList.length > 0 ?
+						conversationList.map((conversation) => (
+							<ConversationItem
+								key={conversation.id}
+								conversation={conversation}
+								selected={selectedConversation}
+								onSelectAction={setSelectedConversation}
+							/>
+						))
+						:
+						(
+							<Empty>
+								<EmptyHeader>
+									<EmptyMedia variant="icon">
+										<Users />	
+									</EmptyMedia>
+									<EmptyTitle>No conversations</EmptyTitle>
+									<EmptyDescription>No conversations found</EmptyDescription>
+								</EmptyHeader>
+								<EmptyContent>
+								</EmptyContent>
+							</Empty>
+						)
+					}
 				</ItemGroup>
 			</ScrollArea>
 		</aside>
@@ -86,7 +123,7 @@ export function ConversationItem({
 	onSelectAction,
 } : 
 	{
-		conversation: Conversation, 
+		conversation: ConversationType, 
 		selected: string,
 		onSelectAction: (id: string) => void; 
 	} ){
@@ -97,17 +134,16 @@ export function ConversationItem({
 				className={cn("bg-background", selected === conversation.id && "bg-muted")}>
 				<ItemMedia>
 					<Avatar>
-						<AvatarImage src={conversation.user.avatar} alt="@me" />
-						<AvatarFallback>{conversation.user.initials}</AvatarFallback>
+						<AvatarFallback>{conversation.listingSnapshot.seller.displayName[0]}</AvatarFallback>
 					</Avatar>
 				</ItemMedia>		
 				<ItemContent>
 					<div className="flex justify-between items-center">
-						<ItemTitle>{conversation.user.name}</ItemTitle>
-						<p className="text-muted-foreground text-xs">{conversation.time}</p>
+						<ItemTitle>{conversation.listingSnapshot.seller.displayName}</ItemTitle>
+						<p className="text-muted-foreground text-xs">{conversation.lastMessageAt?.toLocaleTimeString('en-us', { hour: '2-digit', minute: '2-digit' }) ?? conversation.createdAt.toLocaleTimeString('en-us', { hour: '2-digit', minute: '2-digit' })}</p>
 					</div>
-					<p className="text-xs">{conversation.listing.title}</p>
-					<ItemDescription className="line-clamp-1">{conversation.lastMessage}</ItemDescription>
+					<p className="text-xs">{conversation.listingSnapshot.title}</p>
+					<ItemDescription className="line-clamp-1">{conversation.lastMessage ?? "No messages yet"}</ItemDescription>
 				</ItemContent>
 			</Item>
 		</Link>

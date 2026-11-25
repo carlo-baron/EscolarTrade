@@ -182,7 +182,6 @@ service cloud.firestore {
 
     function isParticipant(data) {
       return signedIn()
-        && data.participants is list
         && request.auth.uid in data.participants;
     }
 
@@ -203,10 +202,11 @@ service cloud.firestore {
         && data.participants == [data.buyerId, data.sellerId]
         && acceptsNewContact(listing)
         && exactKeys(data.listingSnapshot, [
-          'title', 'image', 'status', 'priceCentavos', 'seller'
+          'title', 'image', 'slug', 'status', 'priceCentavos', 'seller'
         ])
         && data.listingSnapshot.title == listing.title
         && data.listingSnapshot.image == listing.images[0]
+        && data.listingSnapshot.slug == listing.slug
         && data.listingSnapshot.status == listing.status
         && data.listingSnapshot.priceCentavos == listing.priceCentavos
         && data.listingSnapshot.seller == listing.seller

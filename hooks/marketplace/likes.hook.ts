@@ -4,11 +4,12 @@ import { collection, documentId, getDocs, limit, query, where } from "firebase/f
 import { useGetUser } from "../zustand/auth.store";
 import { db } from "@/lib/firebase";
 import { ListingDetailedType, ListingWithLikeStateSchema } from "@/schemas/listing.schema";
+import { useCallback } from "react";
 
 export const useGetLikedListings = () => {
 	const user = useGetUser();
 
-	return async (): Promise<ListingDetailedType[]> => {
+	return useCallback(async (): Promise<ListingDetailedType[]> => {
 		if(!user) {
 			return [];
 		}
@@ -45,5 +46,5 @@ export const useGetLikedListings = () => {
 			soldAt: doc.data().soldAt?.toDate() ?? null,
 			isLiked: true
 		})));
-	}
+	}, [user]);
 }

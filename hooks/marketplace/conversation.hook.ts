@@ -1,14 +1,16 @@
 "use client";
 
-import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { useCallback } from "react";
+import { collection, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where } from "firebase/firestore";
 import { useGetUser } from "../zustand/auth.store";
 import { db } from "@/lib/firebase";
 import { ListingSchema } from "@/schemas/listing.schema";
+import { ConversationSchema } from "@/schemas/conversation.schema";
 
 export const useConversation = () => {
 	const user = useGetUser();
 
-	return async (listingId: string) => {
+	return useCallback(async (listingId: string) => {
 		if(!user){
 			return {
 				success: false,
@@ -60,6 +62,7 @@ export const useConversation = () => {
 			listingSnapshot: {
 				title: listing.title,
 				image: listing.images[0],
+				slug: listing.slug,
 				status: listing.status,
 				priceCentavos: listing.priceCentavos,
 				seller: listing.seller,
@@ -75,5 +78,39 @@ export const useConversation = () => {
 			message: "New conversation created successfully!",
 			conversationId: conversationRef.id
 		};
-	}
+	}, [user]);
+}
+
+export const useListConversations = () => {
+	const user = useGetUser();
+
+	return useCallback(async () => {
+		if(!user){
+			return {
+				success: false,
+				message: "User not found! Please login."
+			}
+		}
+
+		const conversationsRef = collection(db, "conversations");
+		const q = query(
+			conversationsRef,
+			where("participants", "array-contains", user.uid),
+			limit(50)
+		);
+
+		const conversationsSnap = await getDocs(q);
+
+		const conversations = conversationsSnap.docs.map((doc) => ConversationSchema.parse({
+			id: doc.id,
+			...doc.data(),
+			createdAt: doc.data().createdAt.toDate()
+		}));
+
+		return {
+			success: true,
+			message: "Conversations fetched successfully!",
+			conversations
+		}
+	}, [user]);
 }

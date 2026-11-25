@@ -3,11 +3,12 @@ import { signInWithEmailAndPassword, signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
 import { clearSession, createSession } from "@/app/auth/session.server"
 import { authRedirect } from "@/lib/auth/policy"
+import { useCallback } from "react"
 
 export function useLogin() {
   const router = useRouter()
 
-  return async (email: string, password: string) => {
+  return useCallback(async (email: string, password: string) => {
     await clearSession()
     const credential = await signInWithEmailAndPassword(
       auth,
@@ -27,5 +28,5 @@ export function useLogin() {
     router.replace("/marketplace")
     router.refresh()
     return result
-  }
+  }, [router]);
 }

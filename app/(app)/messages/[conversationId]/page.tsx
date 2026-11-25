@@ -87,7 +87,7 @@ export default async function ConversationPage({
 						</ItemActions>
 					</Item>
 
-					<ChatItemDetail listing={chat.listing} seller/>
+					<ChatItemDetail listing={chat.listing} seller={true}/>
 				</div>
 				<MessageScroller className="min-h-0 flex-1">
 					<MessageScrollerViewport>
