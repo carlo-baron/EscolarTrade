@@ -30,6 +30,7 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty"
+import { useSetConversationList } from "@/hooks/zustand/conversation.store";
 
 type ChatFilter = "all" | "buying" | "selling" | "unread"
 
@@ -39,17 +40,19 @@ export function ConversationList() {
 	const [chatFilter, setChatFilter] = useState<ChatFilter>("all");
 	const [conversationList, setConversationList] = useState<ConversationType[]>([]);
 	const listConversations = useListConversations();
+	const setConversationStoreList = useSetConversationList();
 
 	useEffect(() => {
 		async function getConversations(){
 			const data = await listConversations();
 			if(data.success){
 				setConversationList(data.conversations as ConversationType[]);
+				setConversationStoreList(data.conversations as ConversationType[]);
 			}
 		}
 
 		getConversations();
-	}, [listConversations]);
+	}, [listConversations, setConversationStoreList]);
 
 	return (
 		<aside className="flex h-full min-h-0 w-[30%] shrink-0 flex-col py-4">
@@ -140,7 +143,7 @@ export function ConversationItem({
 				<ItemContent>
 					<div className="flex justify-between items-center">
 						<ItemTitle>{conversation.listingSnapshot.seller.displayName}</ItemTitle>
-						<p className="text-muted-foreground text-xs">{conversation.lastMessageAt?.toLocaleTimeString('en-us', { hour: '2-digit', minute: '2-digit' }) ?? conversation.createdAt.toLocaleTimeString('en-us', { hour: '2-digit', minute: '2-digit' })}</p>
+						<p className="text-muted-foreground text-xs">{conversation.lastMessageAt.toLocaleTimeString('en-us', { hour: '2-digit', minute: '2-digit' }) ?? conversation.createdAt.toLocaleTimeString('en-us', { hour: '2-digit', minute: '2-digit' })}</p>
 					</div>
 					<p className="text-xs">{conversation.listingSnapshot.title}</p>
 					<ItemDescription className="line-clamp-1">{conversation.lastMessage ?? "No messages yet"}</ItemDescription>

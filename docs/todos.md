@@ -17,6 +17,11 @@
 
 ## Likes
 - TODO for listing card and listing item, have an event to tell if the liked button happened (only for optimistic rendering)
+- Load more feature
+- unliking would remove the listing to local copy
 
 ## Marketplace
 - ~~TODO Price sorting~~
+
+## Messages
+- Get Conversation and Messages

@@ -211,7 +211,7 @@ service cloud.firestore {
         && data.listingSnapshot.priceCentavos == listing.priceCentavos
         && data.listingSnapshot.seller == listing.seller
         && data.createdAt == request.time
-        && data.lastMessageAt == null
+        && data.lastMessageAt == request.time
         && data.lastMessage == null;
     }
 

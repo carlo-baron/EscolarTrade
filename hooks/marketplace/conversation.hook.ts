@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { collection, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, where } from "firebase/firestore";
 import { useGetUser } from "../zustand/auth.store";
 import { db } from "@/lib/firebase";
 import { ListingSchema } from "@/schemas/listing.schema";
@@ -68,7 +68,7 @@ export const useConversation = () => {
 				seller: listing.seller,
 			},
 			createdAt: serverTimestamp(),
-			lastMessageAt: null,
+			lastMessageAt: serverTimestamp(),
 			lastMessage: null,
 		}
 
@@ -79,6 +79,35 @@ export const useConversation = () => {
 			conversationId: conversationRef.id
 		};
 	}, [user]);
+}
+
+export const useGetConversation = () => {
+	return useCallback(async (conversationId: string) => {
+		const conversationRef = doc(db, "conversations", conversationId);
+		const conversationSnap = await getDoc(conversationRef);
+
+		if(!conversationSnap.exists()){
+			return {
+				success: false,
+				message: "Conversation not found!"
+			}
+		}
+		
+		const data = conversationSnap.data();
+
+		const conversation = ConversationSchema.parse({
+			id: conversationSnap.id,
+			...data,
+			lastMessageAt: data.lastMessageAt.toDate(),
+			createdAt: data.createdAt.toDate()
+		});
+
+		return {
+			success: true,
+			message: "Conversation fetched successfully",
+			conversation 
+		}
+	}, [])
 }
 
 export const useListConversations = () => {
@@ -96,6 +125,7 @@ export const useListConversations = () => {
 		const q = query(
 			conversationsRef,
 			where("participants", "array-contains", user.uid),
+			orderBy("lastMessageAt", "desc"),
 			limit(50)
 		);
 
@@ -104,6 +134,7 @@ export const useListConversations = () => {
 		const conversations = conversationsSnap.docs.map((doc) => ConversationSchema.parse({
 			id: doc.id,
 			...doc.data(),
+			lastMessageAt: doc.data().lastMessageAt.toDate(),
 			createdAt: doc.data().createdAt.toDate()
 		}));
 

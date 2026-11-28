@@ -1,6 +1,26 @@
 import { z } from "zod";
 import { PROGRAMS } from "@/types/school.types";
 
+export const ListingSnapshotSchema = z.strictObject({
+	title: z.string(),
+	image: z.string(),
+	slug: z.string(),
+	status: z.string(),
+	priceCentavos: z.number(),
+	seller: z.object({
+		displayName: z
+		.string()
+		.trim()
+		.min(2)
+		.max(60),
+
+		program: z
+		.enum(PROGRAMS.map((program) => program.value))
+	}),
+})
+
+export type ListingSnapshotType = z.infer<typeof ListingSnapshotSchema>;
+
 export const ConversationSchema = z.strictObject({
 	id: z.string(),
 	listingId: z.string(),
@@ -8,26 +28,10 @@ export const ConversationSchema = z.strictObject({
 	sellerId: z.string(),
 	participants: z.array(z.string()),
 
-	listingSnapshot: z.object({
-		title: z.string(),
-		image: z.string(),
-		slug: z.string(),
-		status: z.string(),
-		priceCentavos: z.number(),
-		seller: z.object({
-			displayName: z
-			.string()
-			.trim()
-			.min(2)
-			.max(60),
-
-			program: z
-			.enum(PROGRAMS.map((program) => program.value))
-		}),
-	}),
+	listingSnapshot: ListingSnapshotSchema,
 
 	createdAt: z.date(),
-	lastMessageAt: z.date().nullable(),
+	lastMessageAt: z.date(),
 	lastMessage: z.string().nullable(),
 });
 

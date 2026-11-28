@@ -1,3 +1,5 @@
+"use client";
+
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -42,25 +44,49 @@ import {
 } from "@/components/ui/message-scroller";
 import { SendHorizontal, SquareArrowOutUpRight, TriangleAlert } from "lucide-react";
 import { listingStatuses } from "@/types/market.types";
+import { useParams } from "next/navigation";
+import { useConversationList } from "@/hooks/zustand/conversation.store";
+import { ConversationType, ListingSnapshotType } from "@/schemas/conversation.schema";
+import { useEffect, useState } from "react";
+import { useGetConversation } from "@/hooks/marketplace/conversation.hook";
+import { toast } from "sonner";
 
-interface ConversationProps {
-	params: Promise<{ conversationId: string }>;
-}
+export default function ConversationPage() {
+	const param = useParams<{ conversationId: string }>();
+	const [convo, setConvo] = useState<ConversationType | null>(null);
+	const conversationList = useConversationList();
+	const getCurrentConvo  = useGetConversation();
 
-export default async function ConversationPage({
-	params,
-}: ConversationProps) {
-	const { conversationId } = await params;
+	const currentConvo = conversationList.find(convo => convo.id === param.conversationId);
+
 	const chat = SAMPLE_CHAT;
-
 	const otherParticipant = chat.participants.find(participant => participant.id !== chat.currentUserId);
+
+	useEffect(() => {
+		async function getConvo(){
+			try{
+				const data = await getCurrentConvo(param.conversationId);
+				if(data.success){
+					setConvo(data.conversation as ConversationType);
+					return;
+				}
+				toast.error(data.message);
+			}catch{
+				toast.error("Can't fetch conversation.");
+			}
+		}
+
+		if(!currentConvo){
+			getConvo();
+		}
+	}, [currentConvo, getCurrentConvo, param.conversationId]);
 
 	return (
 		<section className="
 			flex justify-center h-full flex-1 flex-col py-4
 			">
 			<MessageScrollerProvider
-				key={conversationId}
+				key={param.conversationId}
 				defaultScrollPosition="end"
 				autoScroll
 			>
@@ -87,7 +113,7 @@ export default async function ConversationPage({
 						</ItemActions>
 					</Item>
 
-					<ChatItemDetail listing={chat.listing} seller={true}/>
+					<ChatItemDetail listing={convo?.listingSnapshot} seller={true}/>
 				</div>
 				<MessageScroller className="min-h-0 flex-1">
 					<MessageScrollerViewport>
@@ -168,14 +194,7 @@ export default async function ConversationPage({
 }
 
 interface ChatItemDetailProps {
-	listing: {
-		id: string;
-		image: string;
-		slug: string;
-		title: string;
-		status: string;
-		price: number;
-	}
+	listing?: ListingSnapshotType;
 	seller?: boolean;
 }
 
@@ -184,6 +203,8 @@ function ChatItemDetail({listing, seller = false} : ChatItemDetailProps){
 		label: status,
 		value: status
 	}));
+
+	if(!listing) return;
 
 	return(
 		<Item className="bg-muted rounded-none">
@@ -194,7 +215,7 @@ function ChatItemDetail({listing, seller = false} : ChatItemDetailProps){
 			</ItemMedia>
 			<ItemContent>
 				<ItemTitle>{listing.title}</ItemTitle>
-				<ItemDescription className="text-foreground font-medium">₱{listing.price}</ItemDescription>
+				<ItemDescription className="text-foreground font-medium">₱{listing.priceCentavos / 100}</ItemDescription>
 			</ItemContent>
 			<ItemActions>
 				<Button variant="outline">View Listing <SquareArrowOutUpRight /> </Button>
